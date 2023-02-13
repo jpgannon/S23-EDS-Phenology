@@ -31,7 +31,9 @@ cdf=cdf %>%
                 day = lubridate::day(observation_date))
 
 cdf$elev_bands <- cut(cdf$elevation_in_meters, c(-Inf,800,1300,Inf), c("<800m", "800-1300m", ">1300m"))
+```
 
+```{r}
 #Create Intensity Dataset - icdf
 #Filter to 95% Intensity and the Leaves phenophase, get correct columns
 icdf <- subset(cdf, 
@@ -44,7 +46,9 @@ icdf <- subset(cdf,
 icdf2 <- icdf %>%
   group_by(year, individual_id, common_name) %>%
   filter(day_of_year == min(day_of_year))
+```
 
+```{r}
 #Create Phenophase Status Dataset - cdf
 #Filter to 1s (yes to phenophase status), get correct columns
 cdf1 <- subset(cdf, 
@@ -57,7 +61,9 @@ cdf1 <- subset(cdf,
 cdf2 <- cdf1 %>%
   group_by(year, individual_id, common_name, phenophase_description) %>%
   filter(day_of_year == min(day_of_year))
+```
 
+```{r}
 #SHINY APP STARTS HERE
 # Define UI for app that draws a plot----
 ui = fluidPage(
