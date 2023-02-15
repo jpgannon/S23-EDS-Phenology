@@ -63,6 +63,7 @@ ui = fluidPage(
     tabPanel("Quick Glance", fluid = TRUE,
              sidebarLayout(
                sidebarPanel(selectInput(inputId = "common_name", label = strong("Select Species"), choices=unique(cdf2$common_name), selected="red maple"),
+                            selectInput(inputId = "phenophase_description", label = strong("Select Phenophase"), choices=unique(cdf2$phenophase_description), selected="Colored leaves"),
                             numericInput(inputId = "DOY", label = strong("Drop Onsets After Day:"), 350, min = 1, max = 365)
                ),
                mainPanel(h4("Phenophase Onset 2010-2020", align = "center"), plotOutput(outputId = "plot"))
