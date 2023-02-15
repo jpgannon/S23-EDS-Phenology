@@ -24,13 +24,17 @@ cdf$elev_bands <- cut(cdf$elevation_in_meters, c(-Inf,800,1300,Inf), c("<800m", 
 #Filter to 95% Intensity and the Leaves phenophase, get correct columns
 icdf <- subset(cdf, 
                intensity_value == '95% or more' & phenophase_description == 'Leaves',
-               select = c(species_id, phenophase_id, common_name, phenophase_description, intensity_value, site_name,
+               select = c(species, species_id, phenophase_id, common_name, phenophase_description, intensity_value, site_name,
                           elevation_in_meters, elev_bands, tmin_winter, tmin_spring, tmax_winter, 
                           tmax_spring, daylength,individual_id, year, day_of_year))
 
 #Select the earliest DOY of 95% canopy full by year by individual
 icdf2 <- icdf %>%
   group_by(year, individual_id, common_name) %>%
+  filter(day_of_year == min(day_of_year))
+
+icdf3 <- icdf %>%
+  group_by(year, common_name) %>%
   filter(day_of_year == min(day_of_year))
 
 #Create Phenophase Status Dataset - cdf
@@ -45,6 +49,11 @@ cdf1 <- subset(cdf,
 cdf2 <- cdf1 %>%
   group_by(year, individual_id, common_name, phenophase_description) %>%
   filter(day_of_year == min(day_of_year))
+
+cdf3 <- cdf1 %>%
+  group_by(year, individual_id, common_name) %>%
+  filter(day_of_year == min(day_of_year))
+
 
 #SHINY APP STARTS HERE
 # Define UI for app that draws a plot----
@@ -88,6 +97,14 @@ server <- function(input, output) {
   # Plot of Day of Year by Year
   
   # Subset data
+  selected_species <- reactive({
+    icdf2 %>%
+      filter(
+        common_name == input$common_name,
+        day_of_year < input$DOY
+      )
+  })
+  
   selected_status <- reactive({
     cdf2 %>%
       filter(
@@ -109,8 +126,8 @@ server <- function(input, output) {
   
   output$plot <- renderPlot({
     
-    plot(x = selected_status()$year, y = selected_status()$day_of_year, xlab = "Year", ylab = "Day of Year")
-    abline(fit <- lm(selected_status()$day_of_year~species()$year), col='red')
+    plot(x = selected_species()$year, y = selected_species()$day_of_year, xlab = "Year", ylab = "Day of Year")
+    abline(fit <- lm(selected_species()$day_of_year~selected_species()$year), col='red')
     legend("topleft", bty="n", legend=paste("R2 =", format(summary(fit)$adj.r.squared, digits=4)))
     
   })
