@@ -86,18 +86,28 @@ cdf3 <- cdf1 %>%
 
 ```{r UI}
 ui = fluidPage(
+
   titlePanel("Phenology @ GRSM"),
   tabsetPanel(
     tabPanel("Quick Glance", fluid = TRUE,
              sidebarLayout(
-               sidebarPanel(selectInput(inputId = "common_name", label = strong("Select Species"), choices=unique(cdf2$common_name), selected="red maple"),
-                            selectInput(inputId = "phenophase_description", label = strong("Select Phenophase"), choices=unique(cdf2$phenophase_description), selected="Colored leaves"),
-                            numericInput(inputId = "DOY", label = strong("Drop Onsets After Day:"), 350, min = 1, max = 365)
+               sidebarPanel(selectInput(inputId = "common_name", label = strong("Select Species"),        
+                            choices=unique(cdf2$common_name), selected="red maple"),
+                            selectInput(inputId = "phenophase_description", label = strong("Select Phenophase"), 
+                            choices=unique(cdf2$phenophase_description), selected="Colored leaves"),
+                            numericInput(inputId = "DOY", label = strong("Drop Onsets After Day:"), 350, min = 1, max = 365),
+                            choices=unique(cdf2$year), selected="2010"),
+                            numericInput(inputId = "Year", label = strong("Select Year")
                ),
                mainPanel(h4("Phenophase Onset 2010-2020", align = "center"), plotOutput(outputId = "plot"))
              )
-    ),
+    )
+)
+)
     
+```
+
+```{r tab 2}
     tabPanel("Time Series", fluid = TRUE,
              sidebarLayout(
                sidebarPanel(selectInput(inputId = "common_name2", label = strong("Select Species"), choices=unique(icdf2$common_name), selected="yellow birch"),
@@ -107,7 +117,10 @@ ui = fluidPage(
                ),
                mainPanel(h4("First yes for Leaves, 95% or more, 2010-2020", align = "center"),plotOutput(outputId = "plot2"))
              )
-    ),
+    )
+```
+
+```{r tab3}
       tabPanel("Bivariate", fluid = TRUE,
                       sidebarLayout(
                         sidebarPanel(selectInput(inputId = "common_name2", label = strong("Select Species"), choices=unique(icdf2$common_name), selected="yellow birch"),
@@ -117,14 +130,11 @@ ui = fluidPage(
                         mainPanel(h4("First yes for Leaves, 95% or more, 2010-2020", align = "center"),plotOutput(outputId = "plot3"))
                       )
     )
-  )
-)
 ```
 
 # Define server logic required to draw a histogram ----
 
 ```{r ServLog}
-server <- function(input, output) {
 
 server <- function(input, output) {
   
@@ -187,6 +197,7 @@ server <- function(input, output) {
 ```{r runUI}
 shinyApp(ui = ui, server = server)
 ```
+
 
 
 
