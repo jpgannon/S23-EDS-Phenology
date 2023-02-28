@@ -86,6 +86,21 @@ cdf1 <- subset(
     day_of_year
   )
 )
+
+cdfa <- subset(
+  cdf,
+  phenophase_status == 1 | phenophase_status == 0,
+  select = c(
+    common_name,
+    phenophase_description,
+    phenophase_status,
+    elev_bands,
+    year,
+    day_of_year
+  )
+)
+
+cdfa$y <- cut(cdfa$phenophase_status, breaks = 2)
 ```
 
 #Select the earliest DOY by year by individual
@@ -119,35 +134,27 @@ tab1 <- tabPanel("Quick Glance",
                      selectInput(
                        inputId = "common_name",
                        label = strong("Select Species"),
-                       choices = unique(cdf2$common_name),
+                       choices = unique(cdfa$common_name),
                        selected = "red maple"
                      ),
                      
                      selectInput(
                        inputId = "phenophase_description",
                        label = strong("Select Phenophase"),
-                       choices = unique(cdf2$phenophase_description),
-                       selected = "Colored leaves"
+                       choices = unique(cdfa$phenophase_description),
+                       selected = "Leaves"
                      ),
                      
                      selectInput(
                        inputId = "year",
                        label = strong("Select Year"),
-                       choices = unique(cdf2$year),
+                       choices = unique(cdfa$year),
                        selected = "2010"
                      ),
-                     
-                     numericInput(
-                       inputId = "DOY",
-                       label = strong("Drop Onsets After Day:"),
-                       350,
-                       min = 1,
-                       max = 365
-                     ),
-                     
                    ),
+                   
                    mainPanel(
-                     h4("Phenophase Onset 2010-2020", align = "center"),
+                     h4("Phenophase Status by Elevation Bands", align = "center"),
                      plotOutput(outputId = "plot1")
                    )
                  ))
@@ -310,6 +317,15 @@ server <- function(input, output) {
   
   # Subset data
   selected_species <- reactive({
+    cdfa %>%
+      filter(common_name == input$common_name,
+             year == input$year,
+             # day_of_year < input$DOY,
+             phenophase_description == input$phenophase_description
+      )
+  })
+  
+  selected_species <- reactive({
     icdf2 %>%
       filter(common_name == input$common_name,
              day_of_year < input$DOY)
@@ -347,18 +363,15 @@ server <- function(input, output) {
   
   ## OUTPUT PLOT 1: status / quick glance ##
   output$plot1 <- renderPlot({
-    plot(
-      x = selected_species()$year,
-      y = selected_species()$day_of_year,
-      xlab = "Year",
-      ylab = "Day of Year"
-    )
-    abline(fit <-
-             lm(selected_species()$day_of_year ~ selected_species()$year),
-           col = 'red')
-    legend("topleft",
-           bty = "n",
-           legend = paste("R2 =", format(summary(fit)$adj.r.squared, digits = 4)))
+    ggplot(selected_species(), aes(x=day_of_year, y=elev_bands)) +
+      geom_point(aes(color = y)) +
+      geom_vline(xintercept = c(NA, 90, 180, 270), xlim(NA, 365)) + 
+      # labs(x = "Day of Year", y = "Elevation Band")
+      scale_color_manual(name = "Phenophase Status",
+                         values = c("red", "green"),
+                         labels = c("No", "Yes"))
+
+    
   })
   
   ## OUTPUT PLOT 2: time series ##
