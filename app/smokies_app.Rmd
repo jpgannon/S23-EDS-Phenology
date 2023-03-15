@@ -22,12 +22,20 @@ library(thematic)
 library(ragg)
 library(showtext)
 
-setwd("C:/Users/Sean/Documents/S23-EDS-Phenology/app")
+#setwd("C:/Users/Sean/Documents/S23-EDS-Phenology/app")
 
 rm(list = ls())
 ##if (!file.exists("cdf.csv")) {
-cdf <- read.csv("www/data/cdf.csv")
+#cdf <- read.csv("www/data/cdf.csv")
 ##}
+
+cdf <- npn_download_status_data(
+  request_source = 'Alyssa RShiny Demo App', 
+  network_ids = c(72),
+  years = c(2010:2020), 
+  species_ids = c(3, 98, 61, 82, 1187, 97, 1172, 823, 100, 79, 1189), 
+  additional_fields = c("Site_Name", "Network_Name", "Phenophase_Category"),
+  climate_data = TRUE)
 ```
 
 # ----------------------------------------------------- #
@@ -229,7 +237,7 @@ overview <- tabPanel("Overview",
                      fluid = TRUE,
 
                      div(
-                     h1("Introduction", style = "color:green"),
+                     h1("Introduction"),
                      h3("Great Smoky Mountains National Park"),
                      p("Great Smoky Mountain National Park covers over 800 square miles of the southeastern United States, stretching along the North Carolina-Tennessee border. 
                        The park is one of the most visited in the country, with millions of visitors stopping by to take in the scenery and wildlife. 
@@ -255,7 +263,7 @@ overview <- tabPanel("Overview",
                      p("A great number of factors can influence phenology patterns. 
                        Three major factors that are observed and displayed in this app include elevation, precipitation and temperature. 
                        These factors and others can cause noticeable shifts in cycles from year to year, so observing phenology trends over lengths of time is necessary to find patterns of change."),
-                     h1("Tabs", style = "color:green"),
+                     h1("Tabs"),
                      h4("Quick Glance"),
                      p("This tab provides a brief look at phenophase observations for one of eleven tree species in a specific year."),
                      h4("Time Series"),
