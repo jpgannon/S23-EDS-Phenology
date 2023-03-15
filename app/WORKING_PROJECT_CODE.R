@@ -231,12 +231,9 @@ overview <- tabPanel("Overview",
                        br()
                      ),
                      
-                     fixedPanel(div(style="display: inline-block",
-                                    imageOutput("image1", width="100%", height="30px", inline = T, fill = T),
-                                    #img(src="www/images/img1.jpg", align="right", width=100, height=100),
-                                    br(),
-                                    br(), br(), br(), br(),
-                     )),
+              
+                                    tags$img(src="www/SmokyMountains1.jpg", align="right", width=100, height=100),
+                                    
                      
                      div(
                        h3("Phenology"),
@@ -305,16 +302,7 @@ ui = fluidPage(
 server <- function(input, output, session) {
   thematic::thematic_shiny()
   
-  ## image outputs
-  output$image1=renderImage({
-    # the images are stored in a subdirectory named images
-    filename <- normalizePath(file.path('./www/images',
-                                        paste('SmokyMountains1', '.jpg', sep='')))
-    
-    # Return a list containing the filename
-    list(src = filename, height = 100,width=200)
-  }, deleteFile = FALSE)
-  
+ 
   # Plot of Day of Year by Year
   
   # Subset data
