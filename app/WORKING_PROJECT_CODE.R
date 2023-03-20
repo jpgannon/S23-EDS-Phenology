@@ -1,3 +1,4 @@
+# VT'23 EDS PHENOLOGY APP
 
 #THIS SECTION IS THE SETUP, IT DOWNLOADS ALL THE NECESSARY LIBRARIES AND THE DATA CAN BE IMPORTED WITH THE NPN DOWNLOAD THING OR 
 #VIA A CSV STORED ON A PERSONAL DEVICE
@@ -24,12 +25,12 @@ rm(list = ls())
 ##}
 
 cdf <- npn_download_status_data(
-  request_source = 'Alyssa RShiny Demo App', 
-  network_ids = c(72),
-  years = c(2010:2020), 
-  species_ids = c(3, 98, 61, 82, 1187, 97, 1172, 823, 100, 79, 1189), 
-  additional_fields = c("Site_Name", "Network_Name", "Phenophase_Category"),
-  climate_data = TRUE)
+   request_source = 'VT23 EDS APP DEMO', 
+   network_ids = c(72),
+   years = c(2010:2020), 
+   species_ids = c(3, 98, 61, 82, 1187, 97, 1172, 823, 100, 79, 1189), 
+   additional_fields = c("Site_Name", "Network_Name", "Phenophase_Category"),
+   climate_data = TRUE)
 
 #################################################################################################################################
 #################################################################################################################################
@@ -232,7 +233,7 @@ overview <- tabPanel("Overview",
                      ),
                      
               
-                                    tags$img(src="www/SmokyMountains1.jpg", align="right", width=100, height=100),
+                      tags$img(src="SmokyMountains1.jpg", align="right", width=100, height=100),
                                     
                      
                      div(

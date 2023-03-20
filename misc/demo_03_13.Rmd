@@ -1,0 +1,548 @@
+---
+title: "demo_03_01"
+author: "Smokies Group"
+date: "2023-03-01"
+output: html_document
+runtime: shiny
+---
+  
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(shiny)
+library(rnpn)
+library(dplyr)
+library(lubridate)
+library(styler)
+library(ggplot2)
+library(bslib)
+library(thematic)
+library(ragg)
+library(showtext)
+rm(list = ls())
+##if (!file.exists("cdf.csv")) {
+cdf <- read.csv("cdf.csv")
+##}
+```
+
+# ----------------------------------------------------- #
+
+#Date formats, elevation categories
+```{r cdf_dates}
+cdf = cdf %>%
+  dplyr::mutate(
+    year = lubridate::year(observation_date),
+    month = lubridate::month(observation_date),
+    day = lubridate::day(observation_date)
+  )
+cdf$elev_bands <-
+  cut(cdf$elevation_in_meters,
+      c(-Inf, 800, 1300, Inf),
+      c("<800m", "800-1300m", ">1300m"))
+```
+
+#Create Intensity Dataset - icdf
+#Filter to 95% Intensity and the Leaves phenophase, get correct columns
+```{r intensity}
+icdf <- subset(
+  cdf,
+  intensity_value == '95% or more' &
+    phenophase_description == 'Leaves',
+  select = c(
+    species, species_id, phenophase_id, common_name, phenophase_description,
+    intensity_value, site_name, elevation_in_meters, elev_bands, tmin_winter, 
+    tmin_spring, tmax_winter, tmax_spring, daylength, individual_id, year, day_of_year
+  )
+)
+```
+
+#Select the earliest DOY of 95% canopy full by year by individual
+```{r 95}
+icdf2 <- icdf %>%
+  group_by(year, individual_id, common_name) %>%
+  filter(day_of_year == min(day_of_year))
+icdf3 <- icdf %>%
+  group_by(year, common_name) %>%
+  filter(day_of_year == min(day_of_year))
+```
+
+#Create Phenophase Status Dataset - cdf
+#Filter to 1s (yes to phenophase status), get correct columns
+```{r cdf1}
+cdf1 <- subset(
+  cdf,
+  phenophase_status == 1,
+  select = c(
+    species_id,
+    phenophase_id,
+    common_name,
+    phenophase_description,
+    site_name,
+    elevation_in_meters,
+    elev_bands,
+    tmin_winter,
+    tmin_spring,
+    tmax_winter,
+    tmax_spring,
+    daylength,
+    individual_id,
+    year,
+    day_of_year
+  )
+)
+cdfa <- subset(
+  cdf,
+  phenophase_status == 1 | phenophase_status == 0,
+  select = c(
+    common_name,
+    phenophase_description,
+    phenophase_status,
+    elev_bands,
+    year,
+    day_of_year
+  )
+)
+cdfa$y <- cut(cdfa$phenophase_status, breaks = 2)
+```
+
+#Select the earliest DOY by year by individual
+```{r cdf2}
+cdf2 <- cdf1 %>%
+  group_by(year, individual_id, common_name, phenophase_description) %>%
+  filter(day_of_year == min(day_of_year))
+```
+
+```{r cdf3}
+cdf3 <- cdf1 %>%
+  group_by(year, individual_id, common_name) %>%
+  filter(day_of_year == min(day_of_year))
+```
+
+```{r falling_leaves}
+falling_leaves <- cdf1 %>%
+  group_by(year, individual_id, common_name) %>%
+  filter(phenophase_description == 'Falling leaves')
+```
+
+# ----------------------------------------------------- #
+
+#SHINY APP STARTS HERE
+# Define UI for app that draws a plot----
+```{r tab1}
+tab1 <- tabPanel("Quick Glance",
+                 fluid = TRUE,
+                 sidebarLayout(
+                   sidebarPanel(
+                     selectInput(
+                       inputId = "common_name",
+                       label = strong("Select Species"),
+                       choices = unique(cdfa$common_name),
+                       selected = "red maple"
+                     ),
+                     
+                     selectInput(
+                       inputId = "phenophase_description",
+                       label = strong("Select Phenophase"),
+                       choices = unique(cdfa$phenophase_description),
+                       selected = "Leaves"
+                     ),
+                     
+                     selectInput(
+                       inputId = "year",
+                       label = strong("Select Year"),
+                       choices = unique(cdfa$year),
+                       selected = "2010"
+                     ),
+                     
+                     conditionalPanel(
+                       condition = "input.show_second_plot",
+                     
+                     selectInput(
+                       inputId = "common_name2",
+                       label = strong("Select Species"),
+                       choices = unique(cdfa$common_name),
+                       selected = "sourwood"
+                     ),
+                     
+                     selectInput(
+                       inputId = "phenophase_description2",
+                       label = strong("Select Phenophase"),
+                       choices = unique(cdfa$phenophase_description),
+                       selected = "Leaves"
+                     ),
+                     
+                     selectInput(
+                       inputId = "year2",
+                       label = strong("Select Year"),
+                       choices = unique(cdfa$year),
+                       selected = "2010"
+                     )
+                    ),
+                    
+                    checkboxInput(
+                      inputId = "show_second_plot",
+                      label = "Show second plot"
+                    )
+                     
+                     
+                   ),
+                   mainPanel(
+                     h4("Phenophase Status by Elevation Bands", align = "center"),
+                     plotOutput(outputId = "plot1"),
+                     plotOutput(outputId = "plot1a")
+                   )
+                 ))
+```
+
+```{r tab 2}
+tab2 <- tabPanel("Status", ##*Time Series in future...
+                 fluid = TRUE,
+                 sidebarLayout(
+                   sidebarPanel(
+                     selectInput(
+                       inputId = "common_name2",
+                       label = strong("Select Species"),
+                       choices = unique(icdf2$common_name),
+                       selected = "yellow birch"
+                     ),
+                     
+                     selectInput(
+                       inputId = "phenophase_description",
+                       label = strong("Select Phenophase"),
+                       choices = unique(cdf2$phenophase_description),
+                       selected = "Colored leaves"
+                     ),
+                     
+                     selectInput(
+                       inputId = "elev_bands2",
+                       label = strong("Select Elevation Range"),
+                       choices = unique(icdf2$elev_bands),
+                       selected = "<800m"
+                     ),
+                     
+                     numericInput(
+                       inputId = "DOY2",
+                       label = strong("Drop Onsets After Day:"),
+                       350,
+                       min = 1,
+                       max = 365
+                     )
+                   ),
+                   mainPanel(
+                     h4("First yes for Leaves, 95% or more, 2010-2020", align = "center"),
+                     plotOutput(outputId = "plot2")
+                   )
+                 ))
+```
+
+```{r tab3}
+tab3 <- tabPanel("Intensity", ##Bivariate temp./climate data in future...
+                 fluid = TRUE,
+                 sidebarLayout(
+                   sidebarPanel(
+                     selectInput(
+                       inputId = "common_name2",
+                       label = strong("Select Species"),
+                       choices = unique(icdf2$common_name),
+                       selected = "yellow birch"
+                     ),
+                     
+                     # selectInput(
+                     #   inputId = "elev_bands2",
+                     #   label = strong("Select Elevation Range"),
+                     #   choices = unique(icdf2$elev_bands),
+                     #   selected = "<800m"
+                     # ),
+                     
+                     numericInput(
+                       inputId = "DOY2",
+                       label = strong("Drop Onsets After Day:"),
+                       350,
+                       min = 1,
+                       max = 365
+                     )
+                   ),
+                   mainPanel(
+                     h4("First yes for Leaves, 95% or more, 2010-2020", align = "center"),
+                     plotOutput(outputId = "plot3")
+                   )
+                 ))
+```
+
+```{r tab4}
+tab4 <- tabPanel("*Phenophase Calendar",
+                 fluid = TRUE,
+                 sidebarLayout(
+                   sidebarPanel(
+                     selectInput(
+                       inputId = "common_name",
+                       label = strong("Select Species"),
+                       choices = unique(falling_leaves$common_name)#,
+                       #selected = "red maple"
+                     ),
+                     
+                     selectInput(
+                       inputId = "year",
+                       label = strong("Select Year"),
+                       choices = unique(falling_leaves$year)#,
+                       #selected = "2011"
+                     ),
+                     
+                     numericInput(
+                       inputId = "DOY",
+                       label = strong("Drop Onsets After Day:"),
+                       350,
+                       min = 1,
+                       max = 365
+                     ),
+                     
+                   ),
+                   mainPanel(
+                     h4("Falling Leaves day of year by species", align = "center"),
+                     plotOutput(outputId = "plot4")
+                   )
+                 ))
+```
+
+```{r tab5}
+tab5 <- tabPanel("*Time Series",
+                 fluid = TRUE,
+                 mainPanel(
+                     h4("... time series plot", align = "center"),
+                   )
+)
+```
+
+```{r tab6}
+tab6 <- tabPanel("*Bivariate",
+                 fluid = TRUE,
+                 mainPanel(
+                     h4("... bivariate / climate data plot", align = "center"),
+                   )
+)
+```
+
+```{r overview}
+overview <- tabPanel("Overview", 
+                     fluid = TRUE,
+                     
+                     img(src = 'SmokyMountains1.jpg', align = 'right'),
+                     
+                     h1("Introduction", style = "font-family:'times'; color:green"),
+                     h3("Great Smoky Mountains National Park", style = "font-family:'times'"),
+                     p("Great Smoky Mountain National Park covers over 800 square miles of the southeastern United States, stretching along the North Carolina-Tennessee border. The park is one of the most visited in the country, with millions of visitors stopping by to take in the scenery and wildlife. Different times of year bring different sightings as the seasons change, and these changes and observed and documented through the study of phenology.
+", style = "font-family:'times'"),
+                     h3("Phenology", style = "font-family:'times'"),
+                     p("Phenology is the study of the biological cycles observed in nature, and phenological data for Great Smoky Mountain National Park is displayed in this app. While there is a great number of phenology trends that can be studied, this data explores four:
+", style = "font-family:'times'"),
+                     h6("1. First Leaf Out"),
+                     h6("2. First Flower"),
+                     h6("3. 95% Canopy"),
+                     h6("4. First Fall Leaf Color"),
+                     p("A great number of factors can influence phenology patterns. Three major factors that are observed and displayed in this app include elevation, precipitation and temperature. These factors and others can cause noticeable shifts in cycles from year to year, so observing phenology trends over lengths of time is necessary to find patterns of change."),
+                     h1("Tabs", style = "font-family:'times'; color:green"),
+                     h4("Quick Glance"),
+                     p("This tab provides a brief look at phenophase observations for one of eleven tree species in a specific year. "),
+                     h4("Time Series"),
+                     p("With the time series tab, you not only select a species and phenophase, but also an elevation band as this influences onset of changes. The user can select a range of years to see how the patterns of a particular phenophase changes over time."),
+                     h4("Bivariate"),
+                     p("Lastly, the bivariate tab allows the user to visualize the impacts of temperature or precipitation on the phenophase onset for a species over time."),
+                     h3("Creators", style = "font-family:'times'"),
+                     p("This app was created as a senior capstone project as a collaboration between the National Park Service and Virginia Tech students (Zhao, Jason, Sean, Jen)", style = "font-family:'times'")
+                     
+)
+```
+
+```{r theme}
+# Setup the bslib theme object
+my_theme <- bs_theme(bootswatch = "darkly",
+                     base_font = font_google("Space Mono")) ##"Righteous"
+# Let thematic know to update the fonts, too
+thematic_shiny(font = "auto")
+####
+#theme = bs_theme(
+    #bg = "#0b3d91", fg = "white", primary = "#FCC780",
+    #base_font = font_google("Space Mono"),
+    #code_font = font_google("Space Mono")
+    #)
+    #theme = bs_theme(version = 4, bootswatch = "minty"),
+    #theme = bslib::bs_theme(bootswatch = "solar")
+```
+
+```{r UI}
+ui = fluidPage(titlePanel("Phenology @ GRSM"),
+               tabsetPanel(overview,
+                           tab1,
+                           tab2,
+                           tab3#,
+                           #tab4,
+                           #tab5,
+                           #tab6
+                           ),
+              theme = my_theme,
+              radioButtons("current_theme", "App Theme:", c("Light" = "cerulean", "Dark" = "darkly"))
+) 
+```
+
+# ----------------------------------------------------- #
+
+# Define server logic required to draw a histogram ----
+```{r server_selections}
+```
+
+```{r ServLog}
+server <- function(input, output, session) {
+  thematic::thematic_shiny()
+  
+  # Plot of Day of Year by Year
+  
+  # Subset data
+  selected_species <- reactive({
+    cdfa %>%
+      filter(common_name == input$common_name,
+             year == input$year,
+             phenophase_description == input$phenophase_description
+      )
+  })
+  
+   selected_species2 <- reactive({
+    cdfa %>%
+      filter(common_name == input$common_name2,
+             year == input$year2,
+             phenophase_description == input$phenophase_description2
+      )
+  })
+  
+  selected_status <- reactive({
+    cdf2 %>%
+      filter(
+        common_name == input$common_name,
+        phenophase_description == input$phenophase_description,
+        #elev_bands == input$elev_bands,
+        day_of_year < input$DOY
+      )
+  })
+  
+  fl_calendar <- reactive({
+    falling_leaves %>%
+      filter(
+        common_name == input$common_name,
+        year == input$year,
+        day_of_year == day_of_year
+      )
+  })
+  
+  selected_intensity <- reactive({
+    icdf2 %>%
+      filter(
+        common_name == input$common_name2,
+        #elev_bands == input$elev_bands2,
+        day_of_year < input$DOY2
+      )
+  })
+  
+  #########
+  
+  ## OUTPUT PLOT 1: status / quick glance ##
+  output$plot1 <- renderPlot({
+    ggplot(selected_species(), aes(x=day_of_year, y=elev_bands)) +
+      geom_point(aes(color = y), shape = 22, size = 6) +
+      geom_vline(xintercept = c(NA, 90, 180, 270), xlim(NA, 365)) + 
+      labs(title = paste(input$phenophase_description, "of", input$common_name, "in", input$year), 
+            x = "Day of Year", y = "Elevation Band") +
+             scale_color_manual(name = "Phenophase Status",
+                                values = c("red", "blue"),
+                                labels = c("No", "Yes")) +
+             theme(axis.text = element_text(size = 12),
+                   axis.title = element_text(size = 20, face = "bold"),
+                   plot.title = element_text(size = 28, face = "bold")) 
+
+    
+  })
+  
+    output$plot1a <- renderPlot({
+      req(input$show_second_plot)
+      if(input$show_second_plot) {
+      ggplot(selected_species2(), aes(x=day_of_year, y=elev_bands)) +
+        geom_point(aes(color = y), shape = 22, size = 6) +
+        geom_vline(xintercept = c(NA, 90, 180, 270), xlim(NA, 365)) + 
+        labs(title = paste(input$phenophase_description2, "of", input$common_name2, "in", input$year2), 
+             x = "Day of Year", y = "Elevation Band") +
+        scale_color_manual(name = "Phenophase Status",
+                           values = c("red", "blue"),
+                           labels = c("No", "Yes")) +
+        theme(axis.text = element_text(size = 12),
+              axis.title = element_text(size = 20, face = "bold"),
+              plot.title = element_text(size = 28, face = "bold")) 
+
+        }
+        
+      })
+    
+  })
+  
+  ## OUTPUT PLOT 2: time series ##
+  output$plot2 <- renderPlot({
+    plot(
+      x = selected_intensity()$year,
+      y = selected_intensity()$day_of_year,
+      xlab = "Year",
+      ylab = "Day of Year"
+    )
+    abline(fit <-
+             lm(
+               selected_intensity()$day_of_year ~ selected_intensity()$year
+             ),
+           col = 'red')
+    legend("topleft",
+           bty = "n",
+           legend = paste("R2 =", format(summary(fit)$adj.r.squared, digits = 4)))
+  })
+  
+  ## OUTPUT PLOT 3: bivariate ##
+  output$plot3 <- renderPlot({
+    plot(
+      x = selected_status()$year,
+      y = selected_status()$day_of_year,
+      xlab = "Year",
+      ylab = "Day of Year"
+    )
+    abline(fit <-
+             lm(selected_status()$day_of_year ~ selected_status()$year),
+           col = 'red')
+    legend("topleft",
+           bty = "n",
+           legend = paste("R2 =", format(summary(fit)$adj.r.squared, digits = 4)))
+  })
+  
+  ## OUTPUT PLOT 4: phenophase calendar ##
+  output$plot4 <- renderPlot({
+    hist(
+      fl_calendar()$day_of_year,
+      xlab = 'Day of Year',
+      main = 'Distribution of how many indivs. of a species have falling leaves by DOY',
+      breaks = 365,
+      xlim=c(0,365),
+      col = 'blue',
+      border = 'blue'
+    )
+  })
+  
+  ### light mode / dark mode
+  
+  observe({
+    # Make sure theme is kept current with desired
+    session$setCurrentTheme(
+      bs_theme_update(my_theme, bootswatch = input$current_theme)
+    )
+  })
+  
+}
+```
+
+# User Interface
+```{r runUI}
+thematic_shiny()
+thematic_on()
+thematic_rmd()
+shinyApp(ui = ui, server = server)
+```
