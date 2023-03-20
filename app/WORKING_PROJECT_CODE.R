@@ -113,6 +113,12 @@ cdf3 <- cdf1 %>%
   group_by(year, individual_id, common_name) %>%
   filter(day_of_year == min(day_of_year))
 
+####
+tminspring <- cdf2 %>%
+  group_by(year, individual_id, common_name, phenophase_description) %>%
+  filter(day_of_year == min(day_of_year),
+         phenophase_description == "Leaves")
+
 
 #################################################################################################################################
 #################################################################################################################################
@@ -222,6 +228,41 @@ tab3 <- tabPanel("Intensity", ##Bivariate temp./climate data in future...
                    )
                  ))
 #################################################################################################################################
+tab4 <- tabPanel("BIVARIATE", 
+                 fluid = TRUE,
+                 sidebarLayout(
+                   sidebarPanel(
+                     
+                     ##Input 1: year(s)
+                     selectInput(
+                       inputId = "year",
+                       label = strong("Select Year"),
+                       choices = unique(tminspring$year),
+                       selected = "2010"
+                     ),
+                     
+                     ##Input 2: weather condition: tmax spring or tmin spring
+                     
+                     
+                     ##Input 3: species
+                     selectInput(
+                       inputId = "common_name",
+                       label = strong("Select Species"),
+                       choices = unique(tminspring$common_name),
+                       selected = "yellow birch"
+                     ),
+                     
+                     ##input 4: trendline toggle
+                     
+                   ),
+                   mainPanel(
+                     h4("BIVARIATE", align = "center"),
+                     plotOutput(outputId = "plot4")
+                   )
+                 )
+)
+#################################################################################################################################
+                 
 overview <- tabPanel("Overview", 
                      fluid = TRUE,
                      
@@ -284,7 +325,7 @@ ui = fluidPage(
   titlePanel("Phenology @ GRSM"),
   #theme = bslib::bs_theme(bootswatch = "lux"),
   #header = customHeaderPanel(title = "title"),
-  tabsetPanel(overview, tab1, tab2, tab3),
+  tabsetPanel(overview, tab1, tab2, tab3, tab4),
   theme = my_theme,
   radioButtons("current_theme", "App Theme:", c("Light" = "cerulean", "Dark" = "darkly"))
 )
@@ -345,6 +386,14 @@ server <- function(input, output, session) {
       )
   })
   
+  selected_tab4 <- reactive({
+    cdf2 %>%
+      filter(
+        year == input$year,
+        common_name == input$common_name,
+      )
+  })
+  
   #########
   
   ## OUTPUT PLOT 1: status / quick glance ##
@@ -377,7 +426,7 @@ server <- function(input, output, session) {
            legend = paste("R2 =", format(summary(fit)$adj.r.squared, digits = 4)))
   })
   
-  ## OUTPUT PLOT 3: bivariate ##
+  ## OUTPUT PLOT 3 ##
   output$plot3 <- renderPlot({
     plot(
       x = selected_status()$year,
@@ -391,6 +440,19 @@ server <- function(input, output, session) {
     legend("topleft",
            bty = "n",
            legend = paste("R2 =", format(summary(fit)$adj.r.squared, digits = 4)))
+  })
+  
+  ## OUTPUT PLOT 4 ##
+  output$plot4 <- renderPlot({
+    plot(
+      x = selected_tab4()$tmin_spring,        #tmin spring or tmax spring
+      y = selected_tab4()$day_of_year,   #first leaf out (species)
+      xlab = "Spring Temperature [min or max]",
+      ylab = "First leaf out for [species]"
+    )
+    abline(fit <-
+             lm(selected_status()$day_of_year ~ selected_status()$year),
+           col = 'red')
   })
   
   
