@@ -228,7 +228,7 @@ tab3 <- tabPanel("Intensity", ##Bivariate temp./climate data in future...
                    )
                  ))
 #################################################################################################################################
-tab4 <- tabPanel("BIVARIATE", 
+tab4 <- tabPanel("Bivariate", 
                  fluid = TRUE,
                  sidebarLayout(
                    sidebarPanel(
@@ -444,15 +444,22 @@ server <- function(input, output, session) {
   
   ## OUTPUT PLOT 4 ##
   output$plot4 <- renderPlot({
-    plot(
-      x = selected_tab4()$tmin_spring,        #tmin spring or tmax spring
-      y = selected_tab4()$day_of_year,   #first leaf out (species)
-      xlab = "Spring Temperature [min or max]",
-      ylab = "First leaf out for [species]"
-    )
-    abline(fit <-
-             lm(selected_status()$day_of_year ~ selected_status()$year),
-           col = 'red')
+    ggplot(selected_tab4(), aes(x=tmin_spring, y=day_of_year)) +
+      geom_point() +
+      ggtitle("[Species] first leaf out vs. minimum spring temperature") +
+      xlab("Minimum spring temperature (C)") +
+      ylab("[Species] first leaf out")
+     
+    
+    # plot(
+    #   x = selected_tab4()$tmin_spring,        #tmin spring or tmax spring
+    #   y = selected_tab4()$day_of_year,   #first leaf out (species)
+    #   xlab = "Spring Temperature [min or max]",
+    #   ylab = "First leaf out for [species]"
+    # )
+    # abline(fit <-
+    #          lm(selected_status()$day_of_year ~ selected_status()$year),
+    #        col = 'red')
   })
   
   
