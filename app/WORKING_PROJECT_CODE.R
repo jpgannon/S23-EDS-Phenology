@@ -16,21 +16,23 @@ library(bslib)
 library(thematic)
 library(ragg)
 library(showtext)
-
-#setwd("C:/Users/Sean/Documents/S23-EDS-Phenology/app")
+library(tidyverse)
 
 rm(list = ls())
+setwd("C:/Users/Sean/Documents/S23-EDS-Phenology_v1/app")
+cdf <- read.csv("www/data/cdf.csv")
+
 ##if (!file.exists("cdf.csv")) {
 #cdf <- read.csv("www/data/cdf.csv")
 ##}
 
-cdf <- npn_download_status_data(
-   request_source = 'VT23 EDS APP DEMO', 
-   network_ids = c(72),
-   years = c(2010:2020), 
-   species_ids = c(3, 98, 61, 82, 1187, 97, 1172, 823, 100, 79, 1189), 
-   additional_fields = c("Site_Name", "Network_Name", "Phenophase_Category"),
-   climate_data = TRUE)
+# cdf <- npn_download_status_data(
+#    request_source = 'VT23 EDS APP DEMO', 
+#    network_ids = c(72),
+#    years = c(2010:2020), 
+#    species_ids = c(3, 98, 61, 82, 1187, 97, 1172, 823, 100, 79, 1189), 
+#    additional_fields = c("Site_Name", "Network_Name", "Phenophase_Category"),
+#    climate_data = TRUE)
 
 #################################################################################################################################
 #################################################################################################################################
