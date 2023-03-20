@@ -256,7 +256,7 @@ tab4 <- tabPanel("BIVARIATE",
                      
                    ),
                    mainPanel(
-                     h4("BIVARIATE", align = "center"),
+                     h4("Bivariate", align = "center"),
                      plotOutput(outputId = "plot4")
                    )
                  )
@@ -474,13 +474,3 @@ thematic_on()
 thematic_rmd()
 shinyApp(ui = ui, server = server)
 #runApp()
-
-
-
-
-
-
-
-
-
-
