@@ -18,6 +18,7 @@ library(ragg)
 library(showtext)
 library(tidyverse)
 
+
 rm(list = ls())
 #setwd("C:/Users/Sean/Documents/S23-EDS-Phenology_v1/app")
 #cdf <- read.csv("www/data/cdf.csv")
@@ -541,3 +542,5 @@ thematic_on()
 thematic_rmd()
 shinyApp(ui = ui, server = server)
 #runApp()
+
+
