@@ -478,7 +478,7 @@ server <- function(input, output, session) {
       scale_color_manual(values = elev_colors) +
       scale_fill_manual(values = elev_colors) +
       labs(title = paste("First leaf out of", input$common_name3, "by elevation band"), 
-           x = "Year", y = "Elevation Band", fill = "Elevation Bands")+
+           x = "Year", y = "Day of Year", fill = "Elevation Bands")+
       theme(axis.text = element_text(size = 12),
             axis.title = element_text(size = 20, face = "bold"),
             plot.title = element_text(size = 28, face = "bold")) +
