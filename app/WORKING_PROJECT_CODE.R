@@ -433,7 +433,7 @@ server <- function(input, output, session) {
   #########
   
   ## OUTPUT PLOT 1: status / quick glance ##
-  status_colors <- c("blue", "yellow")
+  status_colors <- c("blue", "goldenrod")
   status_labels <- c("Not Observed", "Observed")
   
   output$plot1 <- renderPlot({
@@ -469,7 +469,7 @@ server <- function(input, output, session) {
   })
   
   ## OUTPUT PLOT 2: time series ##
-  elev_colors <- c("blue", "yellow", "black")
+  elev_colors <- c("blue", "goldenrod", "black")
   
   output$plot2 <- renderPlot({
     ggplot(selected_ElevTS(), aes(x=year, y=day_of_year, color=elev_bands, fill = elev_bands)) +
