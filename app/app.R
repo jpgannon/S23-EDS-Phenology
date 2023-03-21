@@ -17,6 +17,7 @@ library(thematic)
 library(ragg)
 library(showtext)
 library(tidyverse)
+library(rsconnect)
 
 
 rm(list = ls())
@@ -29,12 +30,12 @@ rm(list = ls())
 ##}
 
 cdf <- npn_download_status_data(
-    request_source = 'VT23 EDS APP DEMO', 
-    network_ids = c(72),
-    years = c(2010:2020), 
-    species_ids = c(3, 98, 61, 82, 1187, 97, 1172, 823, 100, 79, 1189), 
-    additional_fields = c("Site_Name", "Network_Name", "Phenophase_Category"),
-    climate_data = TRUE)
+  request_source = 'VT23 EDS APP DEMO', 
+  network_ids = c(72),
+  years = c(2010:2020), 
+  species_ids = c(3, 98, 61, 82, 1187, 97, 1172, 823, 100, 79, 1189), 
+  additional_fields = c("Site_Name", "Network_Name", "Phenophase_Category"),
+  climate_data = TRUE)
 
 #################################################################################################################################
 #################################################################################################################################
@@ -283,7 +284,7 @@ tab4 <- tabPanel("Bivariate",
                  )
 )
 #################################################################################################################################
-                 
+
 overview <- tabPanel("Overview", 
                      fluid = TRUE,
                      
@@ -296,9 +297,9 @@ overview <- tabPanel("Overview",
                        br()
                      ),
                      
-              
-                      tags$img(src="www/SmokyMountains1.jpg", align="right", width=100, height=100),
-                                    
+                     
+                     tags$img(src="www/SmokyMountains1.jpg", align="right", width=100, height=100),
+                     
                      
                      div(
                        h3("Phenology"),
@@ -367,11 +368,11 @@ ui = fluidPage(
 server <- function(input, output, session) {
   thematic::thematic_shiny()
   
- 
+  
   # Plot of Day of Year by Year
   
   # Subset data
-   selected_species <- reactive({
+  selected_species <- reactive({
     cdfa %>%
       filter(common_name == input$common_name,
              year == input$year,
@@ -386,15 +387,15 @@ server <- function(input, output, session) {
              phenophase_description == input$phenophase_description2
       )
   })
-    
-    selected_ElevTS <- reactive({
+  
+  selected_ElevTS <- reactive({
     icdf2 %>%
       filter(
         common_name == input$common_name3,
         day_of_year < input$DOY2
       )
   })
-    
+  
   selected_status <- reactive({
     cdf2 %>%
       filter(
@@ -510,7 +511,7 @@ server <- function(input, output, session) {
       ggtitle("[Species] first leaf out vs. minimum spring temperature") +
       xlab("Minimum spring temperature (C)") +
       ylab("[Species] first leaf out")
-     
+    
     
     # plot(
     #   x = selected_tab4()$tmin_spring,        #tmin spring or tmax spring
