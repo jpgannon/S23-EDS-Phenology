@@ -433,15 +433,17 @@ server <- function(input, output, session) {
   #########
   
   ## OUTPUT PLOT 1: status / quick glance ##
- output$plot1 <- renderPlot({
-    ggplot(selected_species(), aes(x=day_of_year, y=elev_bands)) +
-      geom_point(aes(color = y), shape = 22, size = 6) +
+  status_colors <- c("blue", "yellow")
+  status_labels <- c("Not Observed", "Observed")
+  
+  output$plot1 <- renderPlot({
+    ggplot(selected_species(), aes(x=day_of_year, y=elev_bands,fill = y)) +
+      geom_point(pch = 22, size = 6) +
       geom_vline(xintercept = c(NA, 90, 180, 270), xlim(NA, 365)) + 
       labs(title = paste(input$phenophase_description, "of", input$common_name, "in", input$year), 
-           x = "Day of Year", y = "Elevation Band") +
-      scale_color_manual(name = "Phenophase Status",
-                         values = c("red", "blue"),
-                         labels = c("No", "Yes")) +
+           x = "Day of Year", y = "Elevation Band", fill = "Phenophase Status") +
+      scale_color_manual(name="Phenophase Status", values=status_colors) +
+      scale_fill_manual(name="Phenophase Status", values=status_colors, labels=status_labels) +
       theme(axis.text = element_text(size = 12),
             axis.title = element_text(size = 20, face = "bold"),
             plot.title = element_text(size = 28, face = "bold")) 
@@ -451,34 +453,38 @@ server <- function(input, output, session) {
   output$plot1a <- renderPlot({
     req(input$show_second_plot)
     if(input$show_second_plot) {
-      ggplot(selected_species2(), aes(x=day_of_year, y=elev_bands)) +
-        geom_point(aes(color = y), shape = 22, size = 6) +
+      ggplot(selected_species2(), aes(x=day_of_year, y=elev_bands,fill = y)) +
+        geom_point(pch = 22, size = 6) +
         geom_vline(xintercept = c(NA, 90, 180, 270), xlim(NA, 365)) + 
         labs(title = paste(input$phenophase_description2, "of", input$common_name2, "in", input$year2), 
-             x = "Day of Year", y = "Elevation Band") +
-        scale_color_manual(name = "Phenophase Status",
-                           values = c("red", "blue"),
-                           labels = c("No", "Yes")) +
+             x = "Day of Year", y = "Elevation Band", fill = "Phenophase Status") +
+        scale_color_manual(name="Phenophase Status", values=status_colors) +
+        scale_fill_manual(name="Phenophase Status", values=status_colors, labels=status_labels) +
         theme(axis.text = element_text(size = 12),
               axis.title = element_text(size = 20, face = "bold"),
               plot.title = element_text(size = 28, face = "bold")) 
     }
     
-  
-})
+    
+  })
   
   ## OUTPUT PLOT 2: time series ##
- output$plot2 <- renderPlot({
-ggplot(selected_intensity(), aes(x=year, y=day_of_year, bg=elev_bands, color=elev_bands)) +
-  geom_point(pch = 21, size = 6) +
-  geom_smooth(method=lm, se=FALSE) +
-  labs(title = paste("First leaf out of", input$common_name3, "by elevation band"), 
-       x = "Year", y = "Elevation Band") +
-  theme(axis.text = element_text(size = 12),
-        axis.title = element_text(size = 20, face = "bold"),
-        plot.title = element_text(size = 28, face = "bold")) 
-
-})
+  elev_colors <- c("blue", "yellow", "black")
+  
+  output$plot2 <- renderPlot({
+    ggplot(selected_ElevTS(), aes(x=year, y=day_of_year, color=elev_bands, fill = elev_bands)) +
+      geom_point(pch = 21, size = 6) +
+      geom_smooth(method=lm, se=FALSE) +
+      scale_color_manual(values = elev_colors) +
+      scale_fill_manual(values = elev_colors) +
+      labs(title = paste("First leaf out of", input$common_name3, "by elevation band"), 
+           x = "Year", y = "Elevation Band", fill = "Elevation Bands")+
+      theme(axis.text = element_text(size = 12),
+            axis.title = element_text(size = 20, face = "bold"),
+            plot.title = element_text(size = 28, face = "bold")) +
+      guides(color = FALSE) 
+    
+  })
   
   ## OUTPUT PLOT 3 ##
   output$plot3 <- renderPlot({
