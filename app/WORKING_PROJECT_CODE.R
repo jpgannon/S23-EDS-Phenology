@@ -158,33 +158,20 @@ tab1 <- tabPanel("Quick Glance",
                    )
                  ))
 #################################################################################################################################
-tab2 <- tabPanel("Status", ##*Time Series in future...
+tab2 <- tabPanel("Elevation Bands Time Series",
                  fluid = TRUE,
                  sidebarLayout(
                    sidebarPanel(
+                     
                      selectInput(
-                       inputId = "common_name2",
+                       inputId = "common_name3",
                        label = strong("Select Species"),
                        choices = unique(icdf2$common_name),
                        selected = "yellow birch"
                      ),
                      
-                     selectInput(
-                       inputId = "phenophase_description",
-                       label = strong("Select Phenophase"),
-                       choices = unique(cdf2$phenophase_description),
-                       selected = "Colored leaves"
-                     ),
-                     
-                     selectInput(
-                       inputId = "elev_bands2",
-                       label = strong("Select Elevation Range"),
-                       choices = unique(icdf2$elev_bands),
-                       selected = "<800m"
-                     ),
-                     
                      numericInput(
-                       inputId = "DOY2",
+                       inputId = "DOY",
                        label = strong("Drop Onsets After Day:"),
                        350,
                        min = 1,
