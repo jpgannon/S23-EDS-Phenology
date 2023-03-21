@@ -150,11 +150,43 @@ tab1 <- tabPanel("Quick Glance",
                        choices = unique(cdfa$year),
                        selected = "2010"
                      ),
+                     
+                     conditionalPanel(
+                       condition = "input.show_second_plot",
+                       
+                       selectInput(
+                         inputId = "common_name2",
+                         label = strong("Select Species"),
+                         choices = unique(cdfa$common_name),
+                         selected = "sourwood"
+                       ),
+                       
+                       selectInput(
+                         inputId = "phenophase_description2",
+                         label = strong("Select Phenophase"),
+                         choices = unique(cdfa$phenophase_description),
+                         selected = "Leaves"
+                       ),
+                       
+                       selectInput(
+                         inputId = "year2",
+                         label = strong("Select Year"),
+                         choices = unique(cdfa$year),
+                         selected = "2010"
+                       )
+                     ),
+                     
+                     checkboxInput(
+                       inputId = "show_second_plot",
+                       label = "Show second plot"
+                     )
+                     
+                     
                    ),
-                   
                    mainPanel(
                      h4("Phenophase Status by Elevation Bands", align = "center"),
-                     plotOutput(outputId = "plot1")
+                     plotOutput(outputId = "plot1"),
+                     plotOutput(outputId = "plot1a")
                    )
                  ))
 #################################################################################################################################
@@ -338,14 +370,30 @@ server <- function(input, output, session) {
   # Plot of Day of Year by Year
   
   # Subset data
-  selected_species <- reactive({
+   selected_species <- reactive({
     cdfa %>%
       filter(common_name == input$common_name,
              year == input$year,
-             # day_of_year < input$DOY,
              phenophase_description == input$phenophase_description
       )
   })
+  
+  selected_species2 <- reactive({
+    cdfa %>%
+      filter(common_name == input$common_name2,
+             year == input$year2,
+             phenophase_description == input$phenophase_description2
+      )
+  })
+    
+    selected_ElevTS <- reactive({
+    icdf2 %>%
+      filter(
+        common_name == input$common_name3,
+        day_of_year < input$DOY2
+      )
+  })
+    
   selected_status <- reactive({
     cdf2 %>%
       filter(
@@ -385,34 +433,52 @@ server <- function(input, output, session) {
   #########
   
   ## OUTPUT PLOT 1: status / quick glance ##
-  output$plot1 <- renderPlot({
+ output$plot1 <- renderPlot({
     ggplot(selected_species(), aes(x=day_of_year, y=elev_bands)) +
-      geom_point(aes(color = y)) +
+      geom_point(aes(color = y), shape = 22, size = 6) +
       geom_vline(xintercept = c(NA, 90, 180, 270), xlim(NA, 365)) + 
-      # labs(x = "Day of Year", y = "Elevation Band")
+      labs(title = paste(input$phenophase_description, "of", input$common_name, "in", input$year), 
+           x = "Day of Year", y = "Elevation Band") +
       scale_color_manual(name = "Phenophase Status",
-                         values = c("red", "green"),
-                         labels = c("No", "Yes"))
+                         values = c("red", "blue"),
+                         labels = c("No", "Yes")) +
+      theme(axis.text = element_text(size = 12),
+            axis.title = element_text(size = 20, face = "bold"),
+            plot.title = element_text(size = 28, face = "bold")) 
     
   })
   
+  output$plot1a <- renderPlot({
+    req(input$show_second_plot)
+    if(input$show_second_plot) {
+      ggplot(selected_species2(), aes(x=day_of_year, y=elev_bands)) +
+        geom_point(aes(color = y), shape = 22, size = 6) +
+        geom_vline(xintercept = c(NA, 90, 180, 270), xlim(NA, 365)) + 
+        labs(title = paste(input$phenophase_description2, "of", input$common_name2, "in", input$year2), 
+             x = "Day of Year", y = "Elevation Band") +
+        scale_color_manual(name = "Phenophase Status",
+                           values = c("red", "blue"),
+                           labels = c("No", "Yes")) +
+        theme(axis.text = element_text(size = 12),
+              axis.title = element_text(size = 20, face = "bold"),
+              plot.title = element_text(size = 28, face = "bold")) 
+    }
+    
+  
+})
+  
   ## OUTPUT PLOT 2: time series ##
-  output$plot2 <- renderPlot({
-    plot(
-      x = selected_intensity()$year,
-      y = selected_intensity()$day_of_year,
-      xlab = "Year",
-      ylab = "Day of Year"
-    )
-    abline(fit <-
-             lm(
-               selected_intensity()$day_of_year ~ selected_intensity()$year
-             ),
-           col = 'red')
-    legend("topleft",
-           bty = "n",
-           legend = paste("R2 =", format(summary(fit)$adj.r.squared, digits = 4)))
-  })
+ output$plot2 <- renderPlot({
+ggplot(selected_intensity(), aes(x=year, y=day_of_year, bg=elev_bands, color=elev_bands)) +
+  geom_point(pch = 21, size = 6) +
+  geom_smooth(method=lm, se=FALSE) +
+  labs(title = paste("First leaf out of", input$common_name3, "by elevation band"), 
+       x = "Year", y = "Elevation Band") +
+  theme(axis.text = element_text(size = 12),
+        axis.title = element_text(size = 20, face = "bold"),
+        plot.title = element_text(size = 28, face = "bold")) 
+
+})
   
   ## OUTPUT PLOT 3 ##
   output$plot3 <- renderPlot({
