@@ -24,7 +24,7 @@ library(rsconnect)
 rm(list = ls())
 
 ## Set your working directory: ##
-setwd("C:/Users/Sean/Documents/S23-EDS-Phenology/app")
+#setwd("C:/Users/Sean/Documents/S23-EDS-Phenology/app")
 
 ## Data Download Example: ##
 # cdf <- npn_download_status_data(
@@ -39,7 +39,7 @@ setwd("C:/Users/Sean/Documents/S23-EDS-Phenology/app")
 cdfa <- read.csv("www/data/cdfa.csv")
 cdf2 <- read.csv("www/data/cdf2.csv")
 icdf2 <- read.csv("www/data/icdf2.csv")
-tminspring <- read.csv("www/data/tminspring.csv")
+bivar_weather <- read.csv("www/data/bivar_weather.csv")
 
 #################################################################################################################################
 #################################################################################################################################
@@ -121,7 +121,7 @@ tminspring <- read.csv("www/data/tminspring.csv")
 #   filter(day_of_year == min(day_of_year))
 # 
 # ####
-# tminspring <- cdf2 %>%
+# bivar_weather <- cdf2 %>%
 #   group_by(year, individual_id, common_name, phenophase_description) %>%
 #   filter(day_of_year == min(day_of_year),
 #          phenophase_description == "Leaves")
@@ -258,27 +258,42 @@ tab4 <- tabPanel("Bivariate",
                  fluid = TRUE,
                  sidebarLayout(
                    sidebarPanel(
+                     ##Input: weather condition: tmin spring, tmax spring, or acc. precip.
                      
-                     ##Input 1: year(s)
+                     radioButtons(
+                       inputId = "weather_condition",
+                       label = strong("(inactive) Select Weather Condition:"),
+                       choices = c("Min. spring temp." = which(colnames(bivar_weather)=="tmin_spring"),
+                                   "Max. spring temp." = which(colnames(bivar_weather)=="tmax_spring"), 
+                                   "Acc. precip." = which(colnames(bivar_weather)=="acc_prcp")),  
+                       
+                       #tmin = which(colnames(bivar_weather)=="tmin_spring"),
+                       #tmax = which(colnames(bivar_weather)=="tmax_spring"), 
+                       #prcp = which(colnames(bivar_weather)=="acc_prcp"
+                       
+                       selected = which(colnames(bivar_weather)=="tmin_spring"),
+                       inline = T,
+                       
+                     ),
+                     
+                     ##Input: year(s)
                      selectInput(
-                       inputId = "year",
+                       inputId = "year_bivar",
                        label = strong("Select Year"),
-                       choices = unique(tminspring$year),
+                       choices = unique(bivar_weather$year),
                        selected = "2010"
                      ),
                      
-                     ##Input 2: weather condition: tmax spring or tmin spring
-                     
-                     
-                     ##Input 3: species
+                     ##Input: species
                      selectInput(
-                       inputId = "common_name",
+                       inputId = "common_name_bivar",
                        label = strong("Select Species"),
-                       choices = unique(tminspring$common_name),
-                       selected = "yellow birch"
+                       choices = unique(bivar_weather$common_name),
+                       selected = "red maple"
                      ),
                      
-                     ##input 4: trendline toggle
+                     ##input: trendline toggle
+                     #...
                      
                    ),
                    mainPanel(
@@ -399,14 +414,14 @@ server <- function(input, output, session) {
       )
   })
   
-  fl_calendar <- reactive({
-    falling_leaves %>%
-      filter(
-        common_name == input$common_name,
-        year == input$year,
-        day_of_year == day_of_year
-      )
-  })
+  # fl_calendar <- reactive({
+  #   falling_leaves %>%
+  #     filter(
+  #       common_name == input$common_name,
+  #       year == input$year,
+  #       day_of_year == day_of_year
+  #     )
+  # })
   
   selected_intensity <- reactive({
     icdf2 %>%
@@ -418,10 +433,11 @@ server <- function(input, output, session) {
   })
   
   selected_tab4 <- reactive({
-    cdf2 %>%
+    bivar_weather %>%
       filter(
-        year == input$year,
-        common_name == input$common_name,
+        year == input$year_bivar,
+        common_name == input$common_name_bivar#,
+        #weather_condition = observe(input$weather_condition)
       )
   })
   
@@ -499,14 +515,22 @@ server <- function(input, output, session) {
   
   ## OUTPUT PLOT 4 ##
   output$plot4 <- renderPlot({
-    ggplot(selected_tab4(), aes(x=tmin_spring, y=day_of_year)) +
-      geom_point() +
-      ggtitle("[Species] first leaf out vs. minimum spring temperature") +
+    ggplot(selected_tab4(), aes(x=tmin_spring, y=day_of_year, color=elev_bands)) +
+      # x=tmin_spring
+      # x=input$weather_condition
+      geom_point(size = 6) +
+      geom_smooth(method=lm, se=FALSE) +
+      scale_color_manual(values = elev_colors) +
+      scale_fill_manual(values = elev_colors) +
+      ggtitle(paste(input$common_name_bivar, "first leaf out vs. min. spring temperature,", input$year_bivar)) +
       xlab("Minimum spring temperature (C)") +
-      ylab("[Species] first leaf out")
+      ylab(paste("first leaf out DOY for", input$common_name_bivar)) +
+      labs(subtitle = "*need to reassess data subset...") +
+      theme(axis.text = element_text(size = 12),
+            axis.title = element_text(size = 16, face = "bold"),
+            plot.title = element_text(size = 20, face = "bold")) 
 
   })
-  
   
   ### light mode / dark mode
   observe({
@@ -523,14 +547,6 @@ server <- function(input, output, session) {
 
 thematic_shiny()
 thematic_on()
-thematic_rmd()
+#thematic_rmd()
 shinyApp(ui = ui, server = server)
 #runApp()
-
-## these are sample files to host on GitHub
-#write.csv(x = cdfa, file = "cdfa.csv", row.names = FALSE)
-#write.csv(x = cdf2, file = "cdf2.csv", row.names = FALSE)
-#write.csv(x = icdf2, file = "icdf2.csv", row.names = FALSE)
-#write.csv(x = tminspring, file = "tminspring.csv", row.names = FALSE)
-
-

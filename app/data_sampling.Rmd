@@ -95,6 +95,7 @@ cdf1 <- subset(
     species_id, phenophase_id, common_name,
     phenophase_description, site_name, elevation_in_meters, elev_bands,
     tmin_winter,tmin_spring, tmax_winter, tmax_spring,
+    prcp_spring, prcp, acc_prcp,
     daylength, individual_id, year, day_of_year
   )
 )
@@ -123,8 +124,16 @@ cdf3 <- cdf1 %>%
   filter(day_of_year == min(day_of_year))
 
 ####
-tminspring <- cdf2 %>%
+bivar_weather <- cdf2 %>%
   group_by(year, individual_id, common_name, phenophase_description) %>%
   filter(day_of_year == min(day_of_year),
          phenophase_description == "Leaves")
+```
+
+``` {r write_files}
+## these are sample files to host on GitHub
+write.csv(x = cdfa, file = "cdfa.csv", row.names = FALSE)
+write.csv(x = cdf2, file = "cdf2.csv", row.names = FALSE)
+write.csv(x = icdf2, file = "icdf2.csv", row.names = FALSE)
+write.csv(x = bivar_weather, file = "bivar_weather.csv", row.names = FALSE)
 ```
