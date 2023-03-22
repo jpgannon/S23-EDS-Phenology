@@ -4,6 +4,8 @@
 # THIS SECTION IS THE SETUP, IT DOWNLOADS ALL THE NECESSARY LIBRARIES 
 # AND THE DATA CAN BE IMPORTED WITH THE NPN DOWNLOAD PACKAGE,
 # OR VIA A CSV STORED ON A PERSONAL DEVICE
+#install.packages("ggplot2")
+
 
 library(shiny)
 library(shinydashboard)
@@ -25,7 +27,7 @@ rm(list = ls())
 
 ## Set your working directory: ##
 #setwd("C:/Users/Sean/Documents/S23-EDS-Phenology/app")
-#setwd("C:/Users/jochs/Documents/NewCapstoneFolder/S23-EDS-Phenology/app")
+setwd("C:/Users/jochs/Documents/NewCapstoneFolder/S23-EDS-Phenology/app")
 
 ## Data Download Example: ##
 # cdf <- npn_download_status_data(

@@ -1,0 +1,14 @@
+name: SmokiesApp
+title: SmokiesApp
+username:
+account: jenniferochs
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 8642552
+bundleId: 6992994
+url: https://jenniferochs.shinyapps.io/SmokiesApp/
+when: 1679500101.05039
+lastSyncTime: 1679500101.05043
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: data_sampling.Rmd
