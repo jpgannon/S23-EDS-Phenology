@@ -393,7 +393,7 @@ server <- function(input, output, session) {
     icdf2 %>%
       filter(
         common_name == input$common_name3,
-        day_of_year < input$DOY2
+        day_of_year < input$DOY
       )
   })
   
@@ -502,7 +502,7 @@ server <- function(input, output, session) {
   ## OUTPUT PLOT 3 ##
   output$plot3 <- renderPlot({
     ggplot(selected_timeSeries(), aes(x = year, y = day_of_year)) +
-      geom_line(aes(color = common_name), pch = 21, size = 6) + 
+      geom_point(aes(color = common_name), pch = 21, size = 6) + 
       geom_smooth(method=lm, se=FALSE) +
       labs(title = paste("First leaf out of", input$common_name4, "at elevation band", input$elev_bands2), 
            x = "Year", y = "Day of Year")+
