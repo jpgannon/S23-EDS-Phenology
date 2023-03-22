@@ -222,31 +222,24 @@ tab2 <- tabPanel("Elevation Bands Time Series",
                    )
                  ))
 #################################################################################################################################
-tab3 <- tabPanel("Intensity", 
+tab3 <- tabPanel("Species Time Series", 
                  fluid = TRUE,
                  sidebarLayout(
                    sidebarPanel(
                      selectInput(
-                       inputId = "common_name2",
+                       inputId = "common_name4",
                        label = strong("Select Species"),
                        choices = unique(icdf2$common_name),
+                       multiple = TRUE, 
                        selected = "yellow birch"
                      ),
                      
-                     # selectInput(
-                     #   inputId = "elev_bands2",
-                     #   label = strong("Select Elevation Range"),
-                     #   choices = unique(icdf2$elev_bands),
-                     #   selected = "<800m"
-                     # ),
-                     
-                     numericInput(
-                       inputId = "DOY2",
-                       label = strong("Drop Onsets After Day:"),
-                       350,
-                       min = 1,
-                       max = 365
-                     )
+                     selectInput(
+                       inputId = "elev_bands2",
+                       label = strong("Select Elevation Range"),
+                       choices = unique(icdf2$elev_bands),
+                       selected = "<800m"
+                     ),
                    ),
                    mainPanel(
                      h4("First leaf out for selected species in elevation groups", align = "center"),
@@ -441,6 +434,15 @@ server <- function(input, output, session) {
       )
   })
   
+  #select input for tab3
+  selected_timeSeries <- reactive({
+    bivar_weather %>%
+      filter(
+        common_name %in% input$common_name4,
+        elev_bands == input$elev_bands2,
+      )
+  })
+  
   #########
   
   ## OUTPUT PLOT 1: status / quick glance ##
@@ -499,18 +501,14 @@ server <- function(input, output, session) {
   
   ## OUTPUT PLOT 3 ##
   output$plot3 <- renderPlot({
-    plot(
-      x = selected_status()$year,
-      y = selected_status()$day_of_year,
-      xlab = "Year",
-      ylab = "Day of Year"
-    )
-    abline(fit <-
-             lm(selected_status()$day_of_year ~ selected_status()$year),
-           col = 'red')
-    legend("topleft",
-           bty = "n",
-           legend = paste("R2 =", format(summary(fit)$adj.r.squared, digits = 4)))
+    ggplot(selected_timeSeries(), aes(x = year, y = day_of_year)) +
+      geom_line(aes(color = common_name), pch = 21, size = 6) + 
+      geom_smooth(method=lm, se=FALSE) +
+      labs(title = paste("First leaf out of", input$common_name4, "at elevation band", input$elev_bands2), 
+           x = "Year", y = "Day of Year")+
+      theme(axis.text = element_text(size = 12),
+            axis.title = element_text(size = 20, face = "bold"),
+            plot.title = element_text(size = 28, face = "bold"))
   })
   
   ## OUTPUT PLOT 4 ##
