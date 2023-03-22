@@ -27,7 +27,7 @@ rm(list = ls())
 
 ## Set your working directory: ##
 #setwd("C:/Users/Sean/Documents/S23-EDS-Phenology/app")
-setwd("C:/Users/jochs/Documents/NewCapstoneFolder/S23-EDS-Phenology/app")
+#setwd("C:/Users/jochs/Documents/NewCapstoneFolder/S23-EDS-Phenology/app")
 
 ## Data Download Example: ##
 # cdf <- npn_download_status_data(
@@ -273,12 +273,12 @@ tab4 <- tabPanel("Bivariate",
                        
                      ),
                      
-                     ##Input: year(s)
+                     ##Input: site name(s)
                      selectInput(
-                       inputId = "year_bivar",
-                       label = strong("Select Year"),
-                       choices = unique(bivar_weather$year),
-                       selected = "2010"
+                       inputId = "site_name_bivar",
+                       label = strong("Select Site"),
+                       choices = unique(bivar_weather$site_name),
+                       selected = "GRSM-Tremont-Marcs Trail"
                      ),
                      
                      ##Input: species
@@ -286,6 +286,7 @@ tab4 <- tabPanel("Bivariate",
                        inputId = "common_name_bivar",
                        label = strong("Select Species"),
                        choices = unique(bivar_weather$common_name),
+                       multiple = TRUE, 
                        selected = "red maple"
                      ),
                      
@@ -432,8 +433,8 @@ server <- function(input, output, session) {
   selected_tab4 <- reactive({
     bivar_weather %>%
       filter(
-        year == input$year_bivar,
-        common_name == input$common_name_bivar#,
+        site_name == input$site_name_bivar,
+        common_name %in% input$common_name_bivar#,
         #weather_condition = observe(input$weather_condition)
       )
   })
@@ -516,14 +517,17 @@ server <- function(input, output, session) {
   })
   
   ## OUTPUT PLOT 4 ##
+  elev_colors1 <- c("blue", "goldenrod", "black", "red","darkorange", "yellow", "green", "cyan", "purple", "magenta", "pink")
+  
   output$plot4 <- renderPlot({
-    ggplot(selected_tab4(), aes(x=tmin_spring, y=day_of_year, color=elev_bands)) +
+    ggplot(selected_tab4(), aes(x=tmin_spring, y=day_of_year, shape = common_name)) +
       # x=tmin_spring
       # x=input$weather_condition
-      geom_point(size = 6) +
+      geom_point(aes(color = as.factor(year)), size = 6) +
+      geom_point(colour = "grey90", size = 1.5) +
       geom_smooth(method=lm, se=FALSE) +
-      scale_color_manual(values = elev_colors) +
-      scale_fill_manual(values = elev_colors) +
+      scale_color_manual(values = elev_colors1) +
+      scale_fill_manual(values = elev_colors1) +
       ggtitle(paste(input$common_name_bivar, "first leaf out vs. min. spring temperature,", input$year_bivar)) +
       xlab("Minimum spring temperature (C)") +
       ylab(paste("first leaf out DOY for", input$common_name_bivar)) +
