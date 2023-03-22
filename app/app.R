@@ -25,17 +25,19 @@ rm(list = ls())
 
 ## Set your working directory: ##
 #setwd("C:/Users/Sean/Documents/S23-EDS-Phenology/app")
+#setwd("C:/Users/jochs/Documents/NewCapstoneFolder/S23-EDS-Phenology/app")
 
 ## Data Download Example: ##
 # cdf <- npn_download_status_data(
-#   request_source = 'VT23 EDS APP DEMO', 
-#   network_ids = c(72),
-#   years = c(2010:2020), 
-#   species_ids = c(3, 98, 61, 82, 1187, 97, 1172, 823, 100, 79, 1189), 
-#   additional_fields = c("Site_Name", "Network_Name", "Phenophase_Category"),
-#   climate_data = TRUE)
+ #  request_source = 'VT23 EDS APP DEMO', 
+  # network_ids = c(72),
+   #years = c(2010:2020), 
+   #species_ids = c(3, 98, 61, 82, 1187, 97, 1172, 823, 100, 79, 1189), 
+   #additional_fields = c("Site_Name", "Network_Name", "Phenophase_Category"),
+   #climate_data = TRUE)
 
 ## Sample Data Files: ##
+
 cdfa <- read.csv("www/data/cdfa.csv")
 cdf2 <- read.csv("www/data/cdf2.csv")
 icdf2 <- read.csv("www/data/icdf2.csv")
