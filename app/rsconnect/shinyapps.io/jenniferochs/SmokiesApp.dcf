@@ -5,10 +5,10 @@ account: jenniferochs
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 8642552
-bundleId: 6992994
+bundleId: 7013637
 url: https://jenniferochs.shinyapps.io/SmokiesApp/
-when: 1679500101.05039
-lastSyncTime: 1679500101.05043
+when: 1679926355.20458
+lastSyncTime: 1679926355.20463
 asMultiple: FALSE
 asStatic: FALSE
 ignoredFiles: data_sampling.Rmd
