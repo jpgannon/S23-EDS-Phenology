@@ -517,7 +517,7 @@ server <- function(input, output, session) {
   })
   
   ## OUTPUT PLOT 4 ##
-  elev_colors1 <- c("blue", "goldenrod", "black", "red","darkorange", "yellow", "green", "cyan", "purple", "magenta", "pink")
+  categories1 <- c("blue", "goldenrod", "black", "red","darkorange", "yellow", "green", "cyan", "purple", "magenta", "pink")
   
   output$plot4 <- renderPlot({
     ggplot(selected_tab4(), aes(x=tmin_spring, y=day_of_year, shape = common_name)) +
@@ -526,12 +526,12 @@ server <- function(input, output, session) {
       geom_point(aes(color = as.factor(year)), size = 6) +
       geom_point(colour = "grey90", size = 1.5) +
       geom_smooth(method=lm, se=FALSE) +
-      scale_color_manual(values = elev_colors1) +
-      scale_fill_manual(values = elev_colors1) +
-      ggtitle(paste(input$common_name_bivar, "first leaf out vs. min. spring temperature,", input$year_bivar)) +
+      scale_color_manual(values = categories1) +
+      scale_fill_manual(values = categories1) +
+      ggtitle(paste(input$common_name_bivar, "first leaf out vs. min. spring temperature", input$year_bivar)) +
       xlab("Minimum spring temperature (C)") +
       ylab(paste("first leaf out DOY for", input$common_name_bivar)) +
-      labs(subtitle = "*need to reassess data subset...") +
+      #labs(subtitle = "*need to reassess data subset...") +
       theme(axis.text = element_text(size = 12),
             axis.title = element_text(size = 16, face = "bold"),
             plot.title = element_text(size = 20, face = "bold")) 
