@@ -45,94 +45,7 @@ cdf2 <- read.csv("www/data/cdf2.csv")
 icdf2 <- read.csv("www/data/icdf2.csv")
 bivar_weather <- read.csv("www/data/bivar_weather.csv")
 
-#################################################################################################################################
-#################################################################################################################################
-#THIS SECTION FORMATS THE DATES AND DIVIDES INTO ITS ELEVATION CATEGORIES
-# cdf = cdf %>%
-#   dplyr::mutate(
-#     year = lubridate::year(observation_date),
-#     month = lubridate::month(observation_date),
-#     day = lubridate::day(observation_date)
-#   )
-# cdf$elev_bands <-
-#   cut(cdf$elevation_in_meters,
-#       c(-Inf, 800, 1300, Inf),
-#       c("<800m", "800-1300m", ">1300m"))
-# 
-# #################################################################################################################################
-# #################################################################################################################################
-# #THIS SECTION 
-# #Create Intensity Dataset - icdf
-# #Filter to 95% Intensity and the Leaves phenophase, get correct columns
-# icdf <- subset(
-#   cdf,
-#   intensity_value == '95% or more' &
-#     phenophase_description == 'Leaves',
-#   select = c(
-#     species, species_id, phenophase_id, common_name, phenophase_description,
-#     intensity_value, site_name, elevation_in_meters, elev_bands, tmin_winter, 
-#     tmin_spring, tmax_winter, tmax_spring, daylength, individual_id, year, day_of_year
-#   )
-# )
-# 
-# #################################################################################################################################
-# #################################################################################################################################
-# #Select the earliest DOY of 95% canopy full by year by individual
-# icdf2 <- icdf %>%
-#   group_by(year, individual_id, common_name) %>%
-#   filter(day_of_year == min(day_of_year))
-# 
-# icdf3 <- icdf %>%
-#   group_by(year, common_name) %>%
-#   filter(day_of_year == min(day_of_year))
-# 
-# #################################################################################################################################
-# #################################################################################################################################
-# #Create Phenophase Status Dataset - cdf
-# #Filter to 1s (yes to phenophase status), get correct columns
-# cdf1 <- subset(
-#   cdf,
-#   phenophase_status == 1,
-#   select = c(
-#     species_id, phenophase_id, common_name,
-#     phenophase_description, site_name, elevation_in_meters, elev_bands,
-#     tmin_winter,tmin_spring, tmax_winter, tmax_spring,
-#     daylength, individual_id, year, day_of_year
-#   )
-# )
-# 
-# cdfa <- subset(
-#   cdf,
-#   phenophase_status == 1 | phenophase_status == 0,
-#   select = c(
-#     common_name,phenophase_description,phenophase_status,
-#     elev_bands,year,day_of_year
-#   )
-# )
-# cdfa$y <- cut(cdfa$phenophase_status, breaks = 2)
-# 
-# 
-# 
-# #################################################################################################################################
-# #################################################################################################################################
-# #Select the earliest DOY by year by individual
-# cdf2 <- cdf1 %>%
-#   group_by(year, individual_id, common_name, phenophase_description) %>%
-#   filter(day_of_year == min(day_of_year))
-# 
-# cdf3 <- cdf1 %>%
-#   group_by(year, individual_id, common_name) %>%
-#   filter(day_of_year == min(day_of_year))
-# 
-# ####
-# bivar_weather <- cdf2 %>%
-#   group_by(year, individual_id, common_name, phenophase_description) %>%
-#   filter(day_of_year == min(day_of_year),
-#          phenophase_description == "Leaves")
 
-
-#################################################################################################################################
-#################################################################################################################################
 #____________________________________________________________________________________________________________________________#
 #SHINY APP STARTS HERE
 # Define UI for app that draws a plot----
@@ -259,7 +172,7 @@ tab4 <- tabPanel("Bivariate",
                      
                      radioButtons(
                        inputId = "weather_condition",
-                       label = strong("(inactive) Select Weather Condition:"),
+                       label = strong("Select Weather Condition:"),
                        choices = c("Min. spring temp." = which(colnames(bivar_weather)=="tmin_spring"),
                                    "Max. spring temp." = which(colnames(bivar_weather)=="tmax_spring"), 
                                    "Acc. precip." = which(colnames(bivar_weather)=="acc_prcp")),  
@@ -517,7 +430,7 @@ server <- function(input, output, session) {
   })
   
   ## OUTPUT PLOT 4 ##
-  elev_colors1 <- c("blue", "goldenrod", "black", "red","darkorange", "yellow", "green", "cyan", "purple", "magenta", "pink")
+  categories1 <- c("blue", "goldenrod", "black", "red","darkorange", "yellow", "green", "cyan", "purple", "magenta", "pink")
   
   output$plot4 <- renderPlot({
     ggplot(selected_tab4(), aes(x=tmin_spring, y=day_of_year, shape = common_name)) +
@@ -526,12 +439,12 @@ server <- function(input, output, session) {
       geom_point(aes(color = as.factor(year)), size = 6) +
       geom_point(colour = "grey90", size = 1.5) +
       geom_smooth(method=lm, se=FALSE) +
-      scale_color_manual(values = elev_colors1) +
-      scale_fill_manual(values = elev_colors1) +
-      ggtitle(paste(input$common_name_bivar, "first leaf out vs. min. spring temperature,", input$year_bivar)) +
+      scale_color_manual(values = categories1) +
+      scale_fill_manual(values = categories1) +
+      ggtitle(paste(input$common_name_bivar, "first leaf out vs. min. spring temperature", input$year_bivar)) +
       xlab("Minimum spring temperature (C)") +
       ylab(paste("first leaf out DOY for", input$common_name_bivar)) +
-      labs(subtitle = "*need to reassess data subset...") +
+      #labs(subtitle = "*need to reassess data subset...") +
       theme(axis.text = element_text(size = 12),
             axis.title = element_text(size = 16, face = "bold"),
             plot.title = element_text(size = 20, face = "bold")) 
