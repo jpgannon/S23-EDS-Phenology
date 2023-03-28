@@ -6,7 +6,6 @@
 # OR VIA A CSV STORED ON A PERSONAL DEVICE
 #install.packages("ggplot2")
 
-
 library(shiny)
 library(shinydashboard)
 library(markdown)
@@ -39,12 +38,10 @@ rm(list = ls())
    #climate_data = TRUE)
 
 ## Sample Data Files: ##
-
 cdfa <- read.csv("www/data/cdfa.csv")
 cdf2 <- read.csv("www/data/cdf2.csv")
 icdf2 <- read.csv("www/data/icdf2.csv")
 bivar_weather <- read.csv("www/data/bivar_weather.csv")
-
 
 #____________________________________________________________________________________________________________________________#
 #SHINY APP STARTS HERE
@@ -169,29 +166,15 @@ tab4 <- tabPanel("Bivariate",
                  sidebarLayout(
                    sidebarPanel(
                      ##Input: weather condition: tmin spring, tmax spring, or acc. precip.
-                     
                      radioButtons(
-                       inputId = "weather_condition",
+                       inputId = "wc", #weather condition
                        label = strong("Select Weather Condition:"),
-                       choices = c("Min. spring temp." = which(colnames(bivar_weather)=="tmin_spring"),
-                                   "Max. spring temp." = which(colnames(bivar_weather)=="tmax_spring"), 
-                                   "Acc. precip." = which(colnames(bivar_weather)=="acc_prcp")),  
+                       choices = c("Min. spring temp." = 1,
+                                   "Max. spring temp." = 2, 
+                                   "Acc. precip." = 3),  
                        
-                       #tmin = which(colnames(bivar_weather)=="tmin_spring"),
-                       #tmax = which(colnames(bivar_weather)=="tmax_spring"), 
-                       #prcp = which(colnames(bivar_weather)=="acc_prcp"
-                       
-                       selected = which(colnames(bivar_weather)=="tmin_spring"),
+                       selected = 1,
                        inline = T,
-                       
-                     ),
-                     
-                     ##Input: site name(s)
-                     selectInput(
-                       inputId = "site_name_bivar",
-                       label = strong("Select Site"),
-                       choices = unique(bivar_weather$site_name),
-                       selected = "GRSM-Tremont-Marcs Trail"
                      ),
                      
                      ##Input: species
@@ -201,6 +184,14 @@ tab4 <- tabPanel("Bivariate",
                        choices = unique(bivar_weather$common_name),
                        multiple = TRUE, 
                        selected = "red maple"
+                     ),
+                     
+                     ##Input: site name(s)
+                     selectInput(
+                       inputId = "site_name_bivar",
+                       label = strong("Select Site"),
+                       choices = unique(bivar_weather$site_name),
+                       selected = "GRSM-Tremont-Marcs Trail"
                      ),
                      
                      ##input: trendline toggle
@@ -287,14 +278,11 @@ ui = fluidPage(
   radioButtons("current_theme", "App Theme:", c("Light" = "cerulean", "Dark" = "darkly"))
 )
 
-
-
 #################################################################################################################################
 #################################################################################################################################
 
 server <- function(input, output, session) {
   thematic::thematic_shiny()
-  
   
   # Plot of Day of Year by Year
   
@@ -355,8 +343,7 @@ server <- function(input, output, session) {
     bivar_weather %>%
       filter(
         site_name == input$site_name_bivar,
-        common_name %in% input$common_name_bivar#,
-        #weather_condition = observe(input$weather_condition)
+        common_name %in% input$common_name_bivar
       )
   })
   
@@ -371,6 +358,7 @@ server <- function(input, output, session) {
   
   #########
   
+  ##########################################
   ## OUTPUT PLOT 1: status / quick glance ##
   status_colors <- c("blue", "goldenrod")
   status_labels <- c("Not Observed", "Observed")
@@ -407,6 +395,7 @@ server <- function(input, output, session) {
     
   })
   
+  ################################
   ## OUTPUT PLOT 2: time series ##
   elev_colors <- c("blue", "goldenrod", "black")
   
@@ -425,6 +414,7 @@ server <- function(input, output, session) {
     
   })
   
+  ###################
   ## OUTPUT PLOT 3 ##
   output$plot3 <- renderPlot({
     ggplot(selected_timeSeries(), aes(x = year, y = day_of_year)) +
@@ -437,11 +427,13 @@ server <- function(input, output, session) {
             plot.title = element_text(size = 28, face = "bold"))
   })
   
+  ###################
   ## OUTPUT PLOT 4 ##
   categories1 <- c("blue", "goldenrod", "black", "red","darkorange", "yellow", "green", "cyan", "purple", "magenta", "pink")
   
   output$plot4 <- renderPlot({
-    ggplot(selected_tab4(), aes(x=tmin_spring, y=day_of_year, shape = common_name)) +
+    #ggplot(selected_tab4(), aes(x=tmin_spring, y=day_of_year, shape=common_name)) +
+    ggplot(selected_tab4(), aes(x=input$wc, y=day_of_year, shape=common_name)) +
       # x=tmin_spring
       # x=input$weather_condition
       geom_point(aes(color = as.factor(year)), size = 6) +
@@ -450,16 +442,23 @@ server <- function(input, output, session) {
       scale_color_manual(values = categories1) +
       scale_fill_manual(values = categories1) +
       ggtitle(paste(input$common_name_bivar, "first leaf out vs. min. spring temperature", input$year_bivar)) +
-      xlab("Minimum spring temperature (C)") +
+      ## make vs. [variable] adapt to selection...
+      
+      xlab(expression('Minimum Spring Temperature ('*~degree*C*')')) +
+      ## make [variable] adapt to selection...
+      
       ylab(paste("first leaf out DOY for", input$common_name_bivar)) +
       #labs(subtitle = "*need to reassess data subset...") +
       theme(axis.text = element_text(size = 12),
             axis.title = element_text(size = 16, face = "bold"),
-            plot.title = element_text(size = 20, face = "bold")) 
+            plot.title = element_text(size = 20, face = "bold"),
+            aspect.ratio = 1) #+
+      #theme_minimal()
 
   })
   
-  ### light mode / dark mode
+  ############################
+  ## light mode / dark mode ##
   observe({
     # Make sure theme is kept current with desired
     session$setCurrentTheme(
