@@ -166,15 +166,15 @@ tab4 <- tabPanel("Bivariate",
                  sidebarLayout(
                    sidebarPanel(
                      ##Input: weather condition: tmin spring, tmax spring, or acc. precip.
-                     radioButtons(
-                       inputId = "wc", #weather condition
+                     selectInput(
+                       inputId = "weather_condition",
                        label = strong("Select Weather Condition:"),
-                       choices = c("Min. spring temp." = 1,
-                                   "Max. spring temp." = 2, 
-                                   "Acc. precip." = 3),  
+                       choices = c("Min T spring" = "tmin_spring",
+                                   "Max T spring" = "tmax_spring", 
+                                   "Acc prcp" = "acc_prcp"),  
                        
-                       selected = 1,
-                       inline = T,
+                       selected = which(colnames(bivar_weather)=="tmin_spring"),
+                       #inline = T,
                      ),
                      
                      ##Input: species
@@ -336,6 +336,9 @@ server <- function(input, output, session) {
       filter(
         site_name == input$site_name_bivar,
         common_name %in% input$common_name_bivar
+      ) %>%
+      select(common_name, site_name, input$weather_condition, 
+             year, day_of_year
       )
   })
   
@@ -414,6 +417,7 @@ server <- function(input, output, session) {
       geom_smooth(method=lm, se=FALSE) +
       labs(title = paste("First leaf out of", input$common_name4, "at elevation band", input$elev_bands2), 
            x = "Year", y = "Day of Year")+
+      theme_classic() +
       theme(axis.text = element_text(size = 12),
             axis.title = element_text(size = 20, face = "bold"),
             plot.title = element_text(size = 28, face = "bold"))
@@ -424,8 +428,7 @@ server <- function(input, output, session) {
   categories1 <- c("blue", "goldenrod", "black", "red","darkorange", "yellow", "green", "cyan", "purple", "magenta", "pink")
   
   output$plot4 <- renderPlot({
-    #ggplot(selected_tab4(), aes(x=tmin_spring, y=day_of_year, shape=common_name)) +
-    ggplot(selected_tab4(), aes(x=input$wc, y=day_of_year, shape=common_name)) +
+    ggplot(selected_tab4(), aes(x= year, y=day_of_year, shape = common_name)) +
       # x=tmin_spring
       # x=input$weather_condition
       geom_point(aes(color = as.factor(year)), size = 6) +
@@ -433,21 +436,16 @@ server <- function(input, output, session) {
       geom_smooth(method=lm, se=FALSE) +
       scale_color_manual(values = categories1) +
       scale_fill_manual(values = categories1) +
-      ggtitle(paste(input$common_name_bivar, "first leaf out vs. min. spring temperature", input$year_bivar)) +
-      ## make vs. [variable] adapt to selection...
-      
-      xlab(expression('Minimum Spring Temperature ('*~degree*C*')')) +
-      ## make [variable] adapt to selection...
-      
+      ggtitle(paste(input$common_name_bivar, "first leaf out vs. min. spring temperature,", input$year_bivar)) +
+      xlab("Minimum spring temperature (C)") +
       ylab(paste("first leaf out DOY for", input$common_name_bivar)) +
-      #labs(subtitle = "*need to reassess data subset...") +
+      labs(subtitle = "*need to reassess data subset...") +
+      theme_classic() +
       theme(axis.text = element_text(size = 12),
             axis.title = element_text(size = 16, face = "bold"),
-            plot.title = element_text(size = 20, face = "bold"),
-            aspect.ratio = 1) #+
-      #theme_minimal()
-
-  })
+            plot.title = element_text(size = 20, face = "bold")) 
+      }, 
+      height = 600, width = 800)
   
   ############################
   ## light mode / dark mode ##
