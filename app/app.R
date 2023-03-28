@@ -46,10 +46,11 @@ bivar_weather <- read.csv("www/data/bivar_weather.csv")
 #____________________________________________________________________________________________________________________________#
 #SHINY APP STARTS HERE
 # Define UI for app that draws a plot----
-tab1 <- tabPanel("Quick Glance",
+tab1 <- tabPanel("Phenology Observation Tracker",
                  fluid = TRUE,
                  sidebarLayout(
                    sidebarPanel(
+                     helpText("NOTE: Some data selections may not provide output."),
                      selectInput(
                        inputId = "common_name",
                        label = strong("Select Species"),
@@ -68,7 +69,7 @@ tab1 <- tabPanel("Quick Glance",
                        inputId = "year",
                        label = strong("Select Year"),
                        choices = unique(cdfa$year),
-                       selected = "2010"
+                       selected = "2020"
                      ),
                      
                      conditionalPanel(
@@ -78,7 +79,7 @@ tab1 <- tabPanel("Quick Glance",
                          inputId = "common_name2",
                          label = strong("Select Species"),
                          choices = unique(cdfa$common_name),
-                         selected = "sourwood"
+                         selected = "yellow buckeye"
                        ),
                        
                        selectInput(
@@ -92,21 +93,54 @@ tab1 <- tabPanel("Quick Glance",
                          inputId = "year2",
                          label = strong("Select Year"),
                          choices = unique(cdfa$year),
-                         selected = "2010"
+                         selected = "2020"
                        )
                      ),
                      
                      checkboxInput(
                        inputId = "show_second_plot",
                        label = "Show second plot"
+                     ),
+                     
+                     conditionalPanel(
+                       condition = "input.show_third_plot",
+                       
+                       selectInput(
+                         inputId = "common_name3",
+                         label = strong("Select Species"),
+                         choices = unique(cdfa$common_name),
+                         selected = "sugar maple"
+                       ),
+                       
+                       selectInput(
+                         inputId = "phenophase_description3",
+                         label = strong("Select Phenophase"),
+                         choices = unique(cdfa$phenophase_description),
+                         selected = "Leaves"
+                       ),
+                       
+                       selectInput(
+                         inputId = "year3",
+                         label = strong("Select Year"),
+                         choices = unique(cdfa$year),
+                         selected = "2020"
+                       )
+                     ),
+                     
+                     checkboxInput(
+                       inputId = "show_third_plot",
+                       label = "Show third plot"
                      )
                      
                      
                    ),
+                     
+
                    mainPanel(
                      h4("Phenophase Status by Elevation Bands", align = "center"),
                      plotOutput(outputId = "plot1"),
-                     plotOutput(outputId = "plot1a")
+                     plotOutput(outputId = "plot1a"),
+                     plotOutput(outputId = "plot1b")
                    )
                  ))
 #################################################################################################################################
@@ -116,19 +150,19 @@ tab2 <- tabPanel("Elevation Bands Time Series",
                    sidebarPanel(
                      
                      selectInput(
-                       inputId = "common_name3",
+                       inputId = "common_nameEB",
                        label = strong("Select Species"),
                        choices = unique(icdf2$common_name),
                        selected = "yellow birch"
                      ),
                      
-                     numericInput(
-                       inputId = "DOY",
-                       label = strong("Drop Onsets After Day:"),
-                       350,
-                       min = 1,
-                       max = 365
-                     )
+                     # numericInput(
+                     #   inputId = "DOY",
+                     #   label = strong("Drop Onsets After Day:"),
+                     #   350,
+                     #   min = 1,
+                     #   max = 365
+                     # )
                    ),
                    mainPanel(
                      h4("First yes for Leaves, 95% or more, 2010-2020", align = "center"),
@@ -303,11 +337,19 @@ server <- function(input, output, session) {
       )
   })
   
+  selected_species3 <- reactive({
+    cdfa %>%
+      filter(common_name == input$common_name3,
+             year == input$year3,
+             phenophase_description == input$phenophase_description3
+      )
+  })
+  
   selected_ElevTS <- reactive({
     icdf2 %>%
       filter(
-        common_name == input$common_name3,
-        day_of_year < input$DOY
+        common_name == input$common_nameEB,
+        # day_of_year < input$DOY
       )
   })
   
@@ -369,14 +411,18 @@ server <- function(input, output, session) {
   output$plot1 <- renderPlot({
     ggplot(selected_species(), aes(x=day_of_year, y=elev_bands,fill = y)) +
       geom_point(pch = 22, size = 6) +
-      geom_vline(xintercept = c(NA, 90, 180, 270), xlim(NA, 365)) + 
+      geom_vline(xintercept = c(79, 172, 265, 355), xlim(NA, 365), color = 'black') +
       labs(title = paste(input$phenophase_description, "of", input$common_name, "in", input$year), 
-           x = "Day of Year", y = "Elevation Band", fill = "Phenophase Status") +
+           x = "Day of Year", y = "Elevation Band", fill = "Phenophase Status",
+           caption = "Each vertical line indicates the start of a new season") +
       scale_color_manual(name="Phenophase Status", values=status_colors) +
       scale_fill_manual(name="Phenophase Status", values=status_colors, labels=status_labels) +
+      scale_x_continuous(breaks = seq(0, 365, 30)) +
+      theme_classic() + 
       theme(axis.text = element_text(size = 12),
             axis.title = element_text(size = 20, face = "bold"),
-            plot.title = element_text(size = 28, face = "bold")) 
+            plot.title = element_text(size = 28, face = "bold"),
+            plot.caption = element_text(size = 14)) 
     
   })
   
@@ -385,18 +431,41 @@ server <- function(input, output, session) {
     if(input$show_second_plot) {
       ggplot(selected_species2(), aes(x=day_of_year, y=elev_bands,fill = y)) +
         geom_point(pch = 22, size = 6) +
-        geom_vline(xintercept = c(NA, 90, 180, 270), xlim(NA, 365)) + 
+        geom_vline(xintercept = c(79, 172, 265, 355), xlim(NA, 365), color = 'black') +
         labs(title = paste(input$phenophase_description2, "of", input$common_name2, "in", input$year2), 
-             x = "Day of Year", y = "Elevation Band", fill = "Phenophase Status") +
+             x = "Day of Year", y = "Elevation Band", fill = "Phenophase Status",
+             caption = "Each vertical line indicates the start of a new season") +
         scale_color_manual(name="Phenophase Status", values=status_colors) +
         scale_fill_manual(name="Phenophase Status", values=status_colors, labels=status_labels) +
+        scale_x_continuous(breaks = seq(0, 365, 30)) +
+        theme_classic() + 
         theme(axis.text = element_text(size = 12),
               axis.title = element_text(size = 20, face = "bold"),
-              plot.title = element_text(size = 28, face = "bold")) 
+              plot.title = element_text(size = 28, face = "bold"),
+              plot.caption = element_text(size = 14)) 
     }
-    
-    
   })
+  
+  output$plot1b <- renderPlot({
+    req(input$show_third_plot)
+    if(input$show_third_plot) {
+      ggplot(selected_species3(), aes(x=day_of_year, y=elev_bands,fill = y)) +
+        geom_point(pch = 22, size = 6) +
+        geom_vline(xintercept = c(79, 172, 265, 355), xlim(NA, 365), color = 'black') +
+        labs(title = paste(input$phenophase_description3, "of", input$common_name3, "in", input$year3), 
+             x = "Day of Year", y = "Elevation Band", fill = "Phenophase Status",
+             caption = "Each vertical line indicates the start of a new season") +
+        scale_color_manual(name="Phenophase Status", values=status_colors) +
+        scale_fill_manual(name="Phenophase Status", values=status_colors, labels=status_labels) +
+        scale_x_continuous(breaks = seq(0, 365, 30)) +
+        theme_classic() + 
+        theme(axis.text = element_text(size = 12),
+              axis.title = element_text(size = 20, face = "bold"),
+              plot.title = element_text(size = 28, face = "bold"),
+              plot.caption = element_text(size = 14)) 
+    }
+  })
+  
   
   ################################
   ## OUTPUT PLOT 2: time series ##
@@ -408,12 +477,15 @@ server <- function(input, output, session) {
       geom_smooth(method=lm, se=FALSE) +
       scale_color_manual(values = elev_colors) +
       scale_fill_manual(values = elev_colors) +
+      scale_x_continuous(breaks = unique(selected_ElevTS()$year), labels = unique(selected_ElevTS()$year)) +
       labs(title = paste("First leaf out of", input$common_name3, "by elevation band"), 
-           x = "Year", y = "Day of Year", fill = "Elevation Bands")+
+           x = "Year", y = "Day of Year", fill = "Elevation Bands") +
+      theme_classic() + 
       theme(axis.text = element_text(size = 12),
             axis.title = element_text(size = 20, face = "bold"),
             plot.title = element_text(size = 28, face = "bold")) +
-      guides(color = FALSE) 
+      guides(color = FALSE)
+    
     
   })
   
