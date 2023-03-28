@@ -245,12 +245,20 @@ overview <- tabPanel("Overview",
                        br(),
                        
                        h1("Tabs"),
-                       h4("Quick Glance"),
-                       p("This tab provides a brief look at phenophase observations for one of eleven tree species in a specific year."),
-                       h4("Time Series"),
-                       p("With the time series tab, you not only select a species and phenophase, but also an elevation band as this influences onset of changes. The user can select a range of years to see how the patterns of a particular phenophase changes over time."),
+                       h4("Compare by Species, Phenophase and Year"),
+                       p("This tab allows the user to display graphs that visualize the relationships between, species, phenophase and elevation
+                         for a chosen year. Up to three graphs can be displayed at once, allowing users to visually compare on a combination of factors.  "),
+                       h4("Elevation Bands Time Series"),
+                       p("With the elevation bands time series tab, the user can explore the changes a selected species demonstrates over the course of
+                         time data has been collected for. The graph divides the species data into three elevation bands and displays both points and a trendline."),
+                       h4("Species Time Series"),
+                       p("Similar to the elevation bands time series, this tab allows the user to select a single species of tree and view the phenophase data
+                         for the duration of the study time. However, only one elevation band can be selected at a time, allowing for a graph that can provide a 
+                         more specific insight to a particular subset"),
                        h4("Bivariate"),
-                       p("Lastly, the bivariate tab allows the user to visualize the impacts of temperature or precipitation on the phenophase onset for a species over time."),
+                       p("Lastly, the bivariate tab allows the user to visualize the impacts of temperature or precipitation on the phenophase onset for a species over time. The user can
+                         examine minimum or maximum spring temperature as well as precipitation accumulation. The user selects a particular tree species and a particular site
+                         in order to subset the information."),
                        br(),
                        
                        h3("Creators"),
@@ -271,7 +279,7 @@ thematic_shiny(font = "auto")
 #################################################################################################################################
 
 ui = fluidPage(
-  titlePanel("Phenology @ GRSM"),
+  titlePanel(title = div(img(src = "SmokyMountains1.jpg", "Phenology @ GRSM"))),
   #theme = bslib::bs_theme(bootswatch = "lux"),
   #header = customHeaderPanel(title = "title"),
   tabsetPanel(overview, tab1, tab2, tab3, tab4),
