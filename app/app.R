@@ -278,7 +278,7 @@ overview <- tabPanel("Overview",
                        br(),
                        
                        h1("Tabs"),
-                       h4("Compare by Species, Phenophase and Year"),
+                       h4("Phenology Observation Tracker"),
                        p("This tab allows the user to display graphs that visualize the relationships between, species, phenophase and elevation
                          for a chosen year. Up to three graphs can be displayed at once, allowing users to visually compare on a combination of factors.  "),
                        h4("Elevation Bands Time Series"),
