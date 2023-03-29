@@ -21,6 +21,7 @@ library(ragg)
 library(showtext)
 library(tidyverse)
 library(rsconnect)
+library(DT)
 
 rm(list = ls())
 
@@ -174,6 +175,8 @@ tab3 <- tabPanel("Species Time Series",
                  fluid = TRUE,
                  sidebarLayout(
                    sidebarPanel(
+                     
+                     helpText("Select one or multiple species"),
                      selectInput(
                        inputId = "common_name4",
                        label = strong("Select Species"),
@@ -199,19 +202,22 @@ tab4 <- tabPanel("Bivariate",
                  fluid = TRUE,
                  sidebarLayout(
                    sidebarPanel(
+                     helpText("NOTE: Some data selections may not provide output."),
+                    
                      ##Input: weather condition: tmin spring, tmax spring, or acc. precip.
                      selectInput(
                        inputId = "weather_condition",
                        label = strong("Select Weather Condition:"),
-                       choices = c("Min T spring" = "tmin_spring",
-                                   "Max T spring" = "tmax_spring", 
-                                   "Acc prcp" = "acc_prcp"),  
+                       choices = c("Min. T spring" = "tmin_spring",
+                                   "Max. T spring" = "tmax_spring", 
+                                   "Acc. prcp." = "acc_prcp"),  
                        
-                       selected = which(colnames(bivar_weather)=="tmin_spring"),
+                       selected = "tmin_spring",
                        #inline = T,
                      ),
                      
                      ##Input: species
+                     helpText("Select one or multiple species"),
                      selectInput(
                        inputId = "common_name_bivar",
                        label = strong("Select Species"),
@@ -234,7 +240,9 @@ tab4 <- tabPanel("Bivariate",
                    ),
                    mainPanel(
                      h4("Bivariate", align = "center"),
-                     plotOutput(outputId = "plot4")
+                     plotOutput(outputId = "plot4"),
+                     br(),
+                     div(tableOutput(outputId = "table_tab4"))
                    )
                  )
 )
@@ -246,9 +254,9 @@ overview <- tabPanel("Overview",
                      div(
                        h1("Introduction"),
                        h3("Great Smoky Mountains National Park"),
-                       p("Great Smoky Mountain National Park covers over 800 square miles of the southeastern United States, stretching along the North Carolina-Tennessee border. 
-                       The park is one of the most visited in the country, with millions of visitors stopping by to take in the scenery and wildlife. 
-                       Different times of year bring different sightings as the seasons change, and these changes and observed and documented through the study of phenology."),
+                       p("Great Smoky Mountain National Park covers over 800 square miles of the southeastern United States, stretching along the North Carolina-Tennessee border.\n"),
+                       p("The park is one of the most visited in the country, with millions of visitors stopping by to take in the scenery and wildlife.\n"),
+                       p("Different times of year bring different sightings as the seasons change, and these changes and observed and documented through the study of phenology."),
                        br(),
                      ),
                      
@@ -258,14 +266,14 @@ overview <- tabPanel("Overview",
                      
                      div(
                        h3("Phenology"),
-                       p("Phenology is the study of the biological cycles observed in nature, and phenological data for Great Smoky Mountain National Park is displayed in this app. 
+                       p("Phenology is the study of the biological cycles observed in nature, and phenological data for Great Smoky Mountain National Park is displayed in this app.\n
                        While there is a great number of phenology trends that can be studied, this data explores four: ",),
                        h6("1. First Leaf Out"),
                        h6("2. First Flower"),
                        h6("3. 95% Canopy"),
                        h6("4. First Fall Leaf Color"),
                        p("A great number of factors can influence phenology patterns. 
-                       Three major factors that are observed and displayed in this app include elevation, precipitation and temperature. 
+                       Three major factors that are observed and displayed in this app include elevation, precipitation and temperature.\n 
                        These factors and others can cause noticeable shifts in cycles from year to year, so observing phenology trends over lengths of time is necessary to find patterns of change."),
                        br(),
                        
@@ -275,15 +283,17 @@ overview <- tabPanel("Overview",
                          for a chosen year. Up to three graphs can be displayed at once, allowing users to visually compare on a combination of factors.  "),
                        h4("Elevation Bands Time Series"),
                        p("With the elevation bands time series tab, the user can explore the changes a selected species demonstrates over the course of
-                         time data has been collected for. The graph divides the species data into three elevation bands and displays both points and a trendline."),
+                         time data has been collected for.\n
+                         The graph divides the species data into three elevation bands and displays both points and a trendline."),
                        h4("Species Time Series"),
                        p("Similar to the elevation bands time series, this tab allows the user to select a single species of tree and view the phenophase data
-                         for the duration of the study time. However, only one elevation band can be selected at a time, allowing for a graph that can provide a 
+                         for the duration of the study time.\n
+                         However, only one elevation band can be selected at a time, allowing for a graph that can provide a 
                          more specific insight to a particular subset"),
                        h4("Bivariate"),
-                       p("Lastly, the bivariate tab allows the user to visualize the impacts of temperature or precipitation on the phenophase onset for a species over time. The user can
-                         examine minimum or maximum spring temperature as well as precipitation accumulation. The user selects a particular tree species and a particular site
-                         in order to subset the information."),
+                       p("Lastly, the bivariate tab allows the user to visualize the impacts of temperature or precipitation on the phenophase onset for a species over time.\n
+                         The user can examine minimum or maximum spring temperature as well as precipitation accumulation.\n
+                         The user selects a particular tree species and a particular site in order to subset the information."),
                        br(),
                        
                        h3("Creators"),
@@ -304,9 +314,9 @@ thematic_shiny(font = "auto")
 #################################################################################################################################
 
 ui = fluidPage(
-  titlePanel(title = div(img(src = "SmokyMountains1.jpg", "Phenology @ GRSM"))),
-  #theme = bslib::bs_theme(bootswatch = "lux"),
-  #header = customHeaderPanel(title = "title"),
+  titlePanel(title = div(tags$img(src = "images/SmokyMountains1.jpg", width=60, height=30), 
+                         "Phenology @ GRSM")),
+
   tabsetPanel(overview, tab1, tab2, tab3, tab4),
   theme = my_theme,
   radioButtons("current_theme", "App Theme:", c("Light" = "cerulean", "Dark" = "darkly"))
@@ -363,15 +373,6 @@ server <- function(input, output, session) {
       )
   })
   
-  # fl_calendar <- reactive({
-  #   falling_leaves %>%
-  #     filter(
-  #       common_name == input$common_name,
-  #       year == input$year,
-  #       day_of_year == day_of_year
-  #     )
-  # })
-  
   selected_intensity <- reactive({
     icdf2 %>%
       filter(
@@ -387,7 +388,7 @@ server <- function(input, output, session) {
         site_name == input$site_name_bivar,
         common_name %in% input$common_name_bivar
       ) %>%
-      select(common_name, site_name, input$weather_condition, 
+      select(common_name, site_name, wvar=input$weather_condition, 
              year, day_of_year
       )
   })
@@ -508,18 +509,18 @@ server <- function(input, output, session) {
   categories1 <- c("blue", "goldenrod", "black", "red","darkorange", "yellow", "green", "cyan", "purple", "magenta", "pink")
   
   output$plot4 <- renderPlot({
-    ggplot(selected_tab4(), aes(x= year, y=day_of_year, shape = common_name)) +
+    ggplot(selected_tab4(), aes(x=wvar, y=day_of_year, shape=common_name)) +
       # x=tmin_spring
       # x=input$weather_condition
-      geom_point(aes(color = as.factor(year)), size = 6) +
+      geom_point(aes(size = 6, color = as.factor(year))) +
       geom_point(colour = "grey90", size = 1.5) +
       geom_smooth(method=lm, se=FALSE) +
       scale_color_manual(values = categories1) +
       scale_fill_manual(values = categories1) +
-      ggtitle(paste(input$common_name_bivar, "first leaf out vs. min. spring temperature,", input$year_bivar)) +
-      xlab("Minimum spring temperature (C)") +
-      ylab(paste("first leaf out DOY for", input$common_name_bivar)) +
-      labs(subtitle = "*need to reassess data subset...") +
+      ggtitle(paste(input$common_name_bivar, "first leaf out vs.", input$weather_condition)) +
+      xlab(input$weather_condition) +
+      ylab(paste("first leaf out DOY")) +
+      #labs(subtitle = "*need to reassess data subset...") +
       theme_classic() +
       theme(axis.text = element_text(size = 12),
             axis.title = element_text(size = 16, face = "bold"),
@@ -527,10 +528,11 @@ server <- function(input, output, session) {
       }, 
       height = 600, width = 800)
   
+  #output$table_tab4 <- renderTable(selected_tab4())
+  
   ############################
   ## light mode / dark mode ##
   observe({
-    # Make sure theme is kept current with desired
     session$setCurrentTheme(
       bs_theme_update(my_theme, bootswatch = input$current_theme)
     )
