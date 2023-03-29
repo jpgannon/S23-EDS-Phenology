@@ -21,6 +21,7 @@ library(ragg)
 library(showtext)
 library(tidyverse)
 library(rsconnect)
+library(DT)
 
 rm(list = ls())
 
@@ -207,9 +208,9 @@ tab4 <- tabPanel("Bivariate",
                      selectInput(
                        inputId = "weather_condition",
                        label = strong("Select Weather Condition:"),
-                       choices = c("Min T spring" = "tmin_spring",
-                                   "Max T spring" = "tmax_spring", 
-                                   "Acc prcp" = "acc_prcp"),  
+                       choices = c("Min. T spring" = "tmin_spring",
+                                   "Max. T spring" = "tmax_spring", 
+                                   "Acc. prcp." = "acc_prcp"),  
                        
                        selected = "tmin_spring",
                        #inline = T,
@@ -239,7 +240,9 @@ tab4 <- tabPanel("Bivariate",
                    ),
                    mainPanel(
                      h4("Bivariate", align = "center"),
-                     plotOutput(outputId = "plot4")
+                     plotOutput(outputId = "plot4"),
+                     br(),
+                     div(tableOutput(outputId = "table_tab4"))
                    )
                  )
 )
@@ -370,15 +373,6 @@ server <- function(input, output, session) {
       )
   })
   
-  # fl_calendar <- reactive({
-  #   falling_leaves %>%
-  #     filter(
-  #       common_name == input$common_name,
-  #       year == input$year,
-  #       day_of_year == day_of_year
-  #     )
-  # })
-  
   selected_intensity <- reactive({
     icdf2 %>%
       filter(
@@ -394,7 +388,7 @@ server <- function(input, output, session) {
         site_name == input$site_name_bivar,
         common_name %in% input$common_name_bivar
       ) %>%
-      select(common_name, site_name, input$weather_condition, 
+      select(common_name, site_name, wvar=input$weather_condition, 
              year, day_of_year
       )
   })
@@ -515,10 +509,10 @@ server <- function(input, output, session) {
   categories1 <- c("blue", "goldenrod", "black", "red","darkorange", "yellow", "green", "cyan", "purple", "magenta", "pink")
   
   output$plot4 <- renderPlot({
-    ggplot(selected_tab4(), aes(x=input$weather_condition, y=day_of_year, shape=common_name)) +
+    ggplot(selected_tab4(), aes(x=wvar, y=day_of_year, shape=common_name)) +
       # x=tmin_spring
       # x=input$weather_condition
-      geom_point(aes(color = as.factor(year)), size = 6) +
+      geom_point(aes(size = 6, color = as.factor(year))) +
       geom_point(colour = "grey90", size = 1.5) +
       geom_smooth(method=lm, se=FALSE) +
       scale_color_manual(values = categories1) +
@@ -534,10 +528,11 @@ server <- function(input, output, session) {
       }, 
       height = 600, width = 800)
   
+  #output$table_tab4 <- renderTable(selected_tab4())
+  
   ############################
   ## light mode / dark mode ##
   observe({
-    # Make sure theme is kept current with desired
     session$setCurrentTheme(
       bs_theme_update(my_theme, bootswatch = input$current_theme)
     )
