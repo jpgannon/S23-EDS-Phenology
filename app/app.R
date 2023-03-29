@@ -254,26 +254,24 @@ overview <- tabPanel("Overview",
                      div(
                        h1("Introduction"),
                        h3("Great Smoky Mountains National Park"),
-                       p("Great Smoky Mountain National Park covers over 800 square miles of the southeastern United States, stretching along the North Carolina-Tennessee border.\n"),
-                       p("The park is one of the most visited in the country, with millions of visitors stopping by to take in the scenery and wildlife.\n"),
-                       p("Different times of year bring different sightings as the seasons change, and these changes and observed and documented through the study of phenology."),
-                       br(),
+                       p("Great Smoky Mountain National Park covers over 800 square miles of the southeastern United States, stretching along the North Carolina-Tennessee border. 
+                         The park is one of the most visited in the country, with millions of visitors stopping by to take in the scenery and wildlife. Different times of year bring 
+                         different sightings as the seasons change, and these changes and observed and documented through the study of phenology."),
+                      br(),
                      ),
                      
                      
-                     tags$img(src="images/SmokyMountains1.jpg", align="right", width=200, height=100),
+                     #tags$img(src="images/SmokyMountains1.jpg", align="right", width=200, height=100),
                      
                      
                      div(
                        h3("Phenology"),
-                       p("Phenology is the study of the biological cycles observed in nature, and phenological data for Great Smoky Mountain National Park is displayed in this app.\n
-                       While there is a great number of phenology trends that can be studied, this data explores four: ",),
-                       h6("1. First Leaf Out"),
-                       h6("2. First Flower"),
-                       h6("3. 95% Canopy"),
-                       h6("4. First Fall Leaf Color"),
-                       p("A great number of factors can influence phenology patterns. 
-                       Three major factors that are observed and displayed in this app include elevation, precipitation and temperature.\n 
+                       p("Phenology is the study of the biological cycles observed in nature, and phenological data for Great Smoky Mountain National Park is displayed in this app.
+                       While there is a great number of phenology trends that can be studied, this app primarily focuses on those that can be observed in tree species. Examples include
+                         first flower, first fall leaf color and the date that 95% canopy is reached. First leaf out in spring is a particular focus of this app, as it allows the user
+                         to explore whether or not spring is reaching Great Smoky Mountain National Park at an earlier time over the years.",),
+                       p("There is also a great number of factors can influence phenology patterns. 
+                       Three major factors that are observed and displayed in this app include elevation, precipitation and temperature. 
                        These factors and others can cause noticeable shifts in cycles from year to year, so observing phenology trends over lengths of time is necessary to find patterns of change."),
                        br(),
                        
@@ -283,21 +281,22 @@ overview <- tabPanel("Overview",
                          for a chosen year. Up to three graphs can be displayed at once, allowing users to visually compare on a combination of factors.  "),
                        h4("Elevation Bands Time Series"),
                        p("With the elevation bands time series tab, the user can explore the changes a selected species demonstrates over the course of
-                         time data has been collected for.\n
+                         time data has been collected for.
                          The graph divides the species data into three elevation bands and displays both points and a trendline."),
                        h4("Species Time Series"),
                        p("Similar to the elevation bands time series, this tab allows the user to select a single species of tree and view the phenophase data
-                         for the duration of the study time.\n
+                         for the duration of the study time.
                          However, only one elevation band can be selected at a time, allowing for a graph that can provide a 
                          more specific insight to a particular subset"),
                        h4("Bivariate"),
-                       p("Lastly, the bivariate tab allows the user to visualize the impacts of temperature or precipitation on the phenophase onset for a species over time.\n
-                         The user can examine minimum or maximum spring temperature as well as precipitation accumulation.\n
+                       p("Lastly, the bivariate tab allows the user to visualize the impacts of temperature or precipitation on the phenophase onset for a species over time.
+                         The user can examine minimum or maximum spring temperature as well as precipitation accumulation.
                          The user selects a particular tree species and a particular site in order to subset the information."),
                        br(),
                        
                        h3("Creators"),
-                       p("This app was created as a senior capstone project as a collaboration between the National Park Service and Virginia Tech students (Zhao, Jason, Sean, Jen)")
+                       p("This app was created as a collaboration between the National Park Service and Environmental Data Science capstone students at Virginia Tech:  
+                         Jason Halvis, Sean Murray, Jennifer Ochs, and Xuanang Zhao")
                      )
 )
 
@@ -314,8 +313,9 @@ thematic_shiny(font = "auto")
 #################################################################################################################################
 
 ui = fluidPage(
-  titlePanel(title = div(tags$img(src = "images/SmokyMountains1.jpg", width=60, height=30), 
-                         "Phenology @ GRSM")),
+  title = "GRSM Phenology App",
+  titlePanel(title = div(tags$img(src = "images/SmokyMountains1.jpg", width=90, height=60), 
+                         "Exploring Phenology Trends in Great Smoky Mountains National Park")),
 
   tabsetPanel(overview, tab1, tab2, tab3, tab4),
   theme = my_theme,
@@ -479,7 +479,7 @@ server <- function(input, output, session) {
       scale_color_manual(values = elev_colors) +
       scale_fill_manual(values = elev_colors) +
       scale_x_continuous(breaks = unique(selected_ElevTS()$year), labels = unique(selected_ElevTS()$year)) +
-      labs(title = paste("First leaf out of", input$common_name3, "by elevation band"), 
+      labs(title = paste("First leaf out of", input$common_nameEB, "by elevation band"), 
            x = "Year", y = "Day of Year", fill = "Elevation Bands") +
       theme_classic() + 
       theme(axis.text = element_text(size = 12),
