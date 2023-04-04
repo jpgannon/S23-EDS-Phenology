@@ -23,6 +23,8 @@ library(tidyverse)
 library(rsconnect)
 library(DT)
 
+
+
 rm(list = ls())
 
 ## Set your working directory: ##
@@ -52,20 +54,21 @@ tab1 <- tabPanel("Phenology Observation Tracker",
                  sidebarLayout(
                    sidebarPanel(
                      helpText("NOTE: Some data selections may not provide output."),
+                     
                      selectInput(
                        inputId = "common_name",
                        label = strong("Select Species"),
                        choices = unique(cdfa$common_name),
                        selected = "red maple"
                      ),
-                     
+
                      selectInput(
                        inputId = "phenophase_description",
                        label = strong("Select Phenophase"),
                        choices = unique(cdfa$phenophase_description),
                        selected = "Leaves"
                      ),
-                     
+
                      selectInput(
                        inputId = "year",
                        label = strong("Select Year"),
@@ -359,7 +362,6 @@ server <- function(input, output, session) {
     icdf2 %>%
       filter(
         common_name == input$common_nameEB,
-        # day_of_year < input$DOY
       )
   })
   
@@ -408,6 +410,8 @@ server <- function(input, output, session) {
   ## OUTPUT PLOT 1: status / quick glance ##
   status_colors <- c("blue", "goldenrod")
   status_labels <- c("Not Observed", "Observed")
+  elev_order <- c("<800m", "800-1300m", ">1300m")
+  
   
   output$plot1 <- renderPlot({
     ggplot(selected_species(), aes(x=day_of_year, y=elev_bands,fill = y)) +
@@ -415,16 +419,16 @@ server <- function(input, output, session) {
       geom_vline(xintercept = c(79, 172, 265, 355), xlim(NA, 365), color = 'black') +
       labs(title = paste(input$phenophase_description, "of", input$common_name, "in", input$year), 
            x = "Day of Year", y = "Elevation Band", fill = "Phenophase Status",
-           caption = "Each vertical line indicates the start of a new season") +
+           caption = "Vertical line indicates the start of an astronomical season") +
       scale_color_manual(name="Phenophase Status", values=status_colors) +
       scale_fill_manual(name="Phenophase Status", values=status_colors, labels=status_labels) +
       scale_x_continuous(breaks = seq(0, 365, 30)) +
+      scale_y_discrete(limits = elev_order) +
       theme_classic() + 
       theme(axis.text = element_text(size = 12),
             axis.title = element_text(size = 20, face = "bold"),
             plot.title = element_text(size = 28, face = "bold"),
             plot.caption = element_text(size = 14)) 
-    
   })
   
   output$plot1a <- renderPlot({
@@ -435,10 +439,11 @@ server <- function(input, output, session) {
         geom_vline(xintercept = c(79, 172, 265, 355), xlim(NA, 365), color = 'black') +
         labs(title = paste(input$phenophase_description2, "of", input$common_name2, "in", input$year2), 
              x = "Day of Year", y = "Elevation Band", fill = "Phenophase Status",
-             caption = "Each vertical line indicates the start of a new season") +
+             caption = "Vertical line indicates the start of an astronomical season") +
         scale_color_manual(name="Phenophase Status", values=status_colors) +
         scale_fill_manual(name="Phenophase Status", values=status_colors, labels=status_labels) +
         scale_x_continuous(breaks = seq(0, 365, 30)) +
+        scale_y_discrete(limits = elev_order) +
         theme_classic() + 
         theme(axis.text = element_text(size = 12),
               axis.title = element_text(size = 20, face = "bold"),
@@ -455,10 +460,11 @@ server <- function(input, output, session) {
         geom_vline(xintercept = c(79, 172, 265, 355), xlim(NA, 365), color = 'black') +
         labs(title = paste(input$phenophase_description3, "of", input$common_name3, "in", input$year3), 
              x = "Day of Year", y = "Elevation Band", fill = "Phenophase Status",
-             caption = "Each vertical line indicates the start of a new season") +
+             caption = "Vertical line indicates the start of an astronomical season") +
         scale_color_manual(name="Phenophase Status", values=status_colors) +
         scale_fill_manual(name="Phenophase Status", values=status_colors, labels=status_labels) +
         scale_x_continuous(breaks = seq(0, 365, 30)) +
+        scale_y_discrete(limits = elev_order) +
         theme_classic() + 
         theme(axis.text = element_text(size = 12),
               axis.title = element_text(size = 20, face = "bold"),
@@ -486,9 +492,9 @@ server <- function(input, output, session) {
             axis.title = element_text(size = 20, face = "bold"),
             plot.title = element_text(size = 28, face = "bold")) +
       guides(color = FALSE)
-    
-    
   })
+  
+
   
   ###################
   ## OUTPUT PLOT 3 ##
