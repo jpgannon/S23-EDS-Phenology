@@ -489,13 +489,10 @@ server <- function(input, output, session) {
   
   output$plot4 <- renderPlot({
     ggplot(selected_bivar(), aes(x=wvar, y=day_of_year, shape=common_name)) +
-      # x=tmin_spring
-      # x=input$weather_condition
-      geom_point(aes(size = 10, color = as.factor(year))) +
+      geom_point(aes(size = 20, color = as.factor(year))) +
       #geom_point(colour = "grey90", size = 4) +
       geom_smooth(method=lm, se=FALSE) +
       scale_color_manual(values = categories1) +
-      #scale_fill_manual(values = categories1) +
       ggtitle(paste(input$common_name_bivar, "first leaf out vs.", input$weather_condition)) +
       xlab(input$weather_condition) +
       ylab(paste("first leaf out DOY")) +
@@ -503,9 +500,15 @@ server <- function(input, output, session) {
       theme_classic() +
       theme(axis.text = element_text(size = 12),
             axis.title = element_text(size = 16, face = "bold"),
-            plot.title = element_text(size = 20, face = "bold")) 
-      }, 
-      height = 500, width = 600)
+            plot.title = element_text(size = 20, face = "bold"),
+            legend.position = "bottom", legend.box = "horizontal",
+            legend.title = element_text(color="blue",size=12,face="bold"),
+            plot.margin = margin(.1, .1, .1, .1, "cm"),
+            aspect.ratio = 1)
+    },
+    height = 500, width = 600
+  )
+
   
   #output$table_tab4 <- renderTable(selected_tab4())
   
