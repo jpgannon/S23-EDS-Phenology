@@ -23,6 +23,8 @@ library(tidyverse)
 library(rsconnect)
 library(DT)
 
+library(ggpmisc)
+
 
 rm(list = ls())
 
@@ -475,6 +477,8 @@ server <- function(input, output, session) {
     ggplot(selected_ElevTS(), aes(x=year, y=day_of_year, color=elev_bands, fill = elev_bands)) +
       geom_point(pch = 21, size = 6) +
       geom_smooth(method=lm, se=FALSE) +
+      stat_poly_eq(formula = y ~ x, aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+                   parse = TRUE, size = 5) +
       scale_color_manual(values = elev_colors) +
       scale_fill_manual(values = elev_colors) +
       scale_x_continuous(breaks = unique(selected_ElevTS()$year), labels = unique(selected_ElevTS()$year)) +
