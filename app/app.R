@@ -23,22 +23,7 @@ library(tidyverse)
 library(rsconnect)
 library(DT)
 
-
-
 rm(list = ls())
-
-## Set your working directory: ##
-#setwd("C:/Users/Sean/Documents/S23-EDS-Phenology/app")
-#setwd("C:/Users/jochs/Documents/NewCapstoneFolder/S23-EDS-Phenology/app")
-
-## Data Download Example: ##
-# cdf <- npn_download_status_data(
- #  request_source = 'VT23 EDS APP DEMO', 
-  # network_ids = c(72),
-   #years = c(2010:2020), 
-   #species_ids = c(3, 98, 61, 82, 1187, 97, 1172, 823, 100, 79, 1189), 
-   #additional_fields = c("Site_Name", "Network_Name", "Phenophase_Category"),
-   #climate_data = TRUE)
 
 ## Sample Data Files: ##
 cdfa <- read.csv("www/data/cdfa.csv")
@@ -135,11 +120,8 @@ tab1 <- tabPanel("Phenology Observation Tracker",
                        inputId = "show_third_plot",
                        label = "Show third plot"
                      )
-                     
-                     
                    ),
-                     
-
+                    
                    mainPanel(
                      h4("Phenophase Status by Elevation Bands", align = "center"),
                      plotOutput(outputId = "plot1"),
@@ -159,14 +141,7 @@ tab2 <- tabPanel("Elevation Bands Time Series",
                        choices = unique(icdf2$common_name),
                        selected = "yellow birch"
                      ),
-                     
-                     # numericInput(
-                     #   inputId = "DOY",
-                     #   label = strong("Drop Onsets After Day:"),
-                     #   350,
-                     #   min = 1,
-                     #   max = 365
-                     # )
+
                    ),
                    mainPanel(
                      h4("First yes for Leaves, 95% or more, 2010-2020", align = "center"),
@@ -518,7 +493,7 @@ server <- function(input, output, session) {
     ggplot(selected_tab4(), aes(x=wvar, y=day_of_year, shape=common_name)) +
       # x=tmin_spring
       # x=input$weather_condition
-      geom_point(aes(size = 6, color = as.factor(year))) +
+      geom_point(aes(size = 10, color = as.factor(year))) +
       geom_point(colour = "grey90", size = 1.5) +
       geom_smooth(method=lm, se=FALSE) +
       scale_color_manual(values = categories1) +
@@ -551,6 +526,6 @@ server <- function(input, output, session) {
 
 thematic_shiny()
 thematic_on()
-#thematic_rmd()
+####
 shinyApp(ui = ui, server = server)
-#runApp()
+
