@@ -23,6 +23,7 @@ library(tidyverse)
 library(rsconnect)
 library(DT)
 
+
 rm(list = ls())
 
 ## Sample Data Files: ##
@@ -30,6 +31,7 @@ cdfa <- read.csv("www/data/cdfa.csv")
 cdf2 <- read.csv("www/data/cdf2.csv")
 icdf2 <- read.csv("www/data/icdf2.csv")
 bivar_weather <- read.csv("www/data/bivar_weather.csv")
+icdfE <- read.csv("www/data/icdfE.csv")
 
 #____________________________________________________________________________________________________________________________#
 #SHINY APP STARTS HERE
@@ -38,7 +40,7 @@ tab1 <- tabPanel("Phenology Observation Tracker",
                  fluid = TRUE,
                  sidebarLayout(
                    sidebarPanel(
-                     helpText("NOTE: Some data selections may not provide output."),
+                     
                      
                      selectInput(
                        inputId = "common_name",
@@ -46,6 +48,8 @@ tab1 <- tabPanel("Phenology Observation Tracker",
                        choices = unique(cdfa$common_name),
                        selected = "red maple"
                      ),
+                     
+                     helpText("NOTE: Some phenophase selections may not provide output."),
 
                      selectInput(
                        inputId = "phenophase_description",
@@ -70,6 +74,8 @@ tab1 <- tabPanel("Phenology Observation Tracker",
                          choices = unique(cdfa$common_name),
                          selected = "yellow buckeye"
                        ),
+                       
+                       helpText("NOTE: Some phenophase selections may not provide output."),
                        
                        selectInput(
                          inputId = "phenophase_description2",
@@ -100,6 +106,8 @@ tab1 <- tabPanel("Phenology Observation Tracker",
                          choices = unique(cdfa$common_name),
                          selected = "sugar maple"
                        ),
+                       
+                       helpText("NOTE: Some phenophase selections may not provide output."),
                        
                        selectInput(
                          inputId = "phenophase_description3",
@@ -136,15 +144,22 @@ tab2 <- tabPanel("Elevation Bands Time Series",
                    sidebarPanel(
                      
                      selectInput(
-                       inputId = "common_nameEB",
+                       inputId = "common_nameE",
                        label = strong("Select Species"),
-                       choices = unique(icdf2$common_name),
+                       choices = unique(icdfE$common_name),
                        selected = "yellow birch"
                      ),
+                      
+                     selectInput(
+                       inputId = "phenophase_descriptionE",
+                       label = strong("Select Phenophase"),
+                       choices = unique(icdfE$phenophase_description),
+                       selected = "Leaves"
+                     )
 
                    ),
                    mainPanel(
-                     h4("First yes for Leaves, 95% or more, 2010-2020", align = "center"),
+                     h4("First yes for phenophase, 95% or more, 2010-2020", align = "center"),
                      plotOutput(outputId = "plot2")
                    )
                  ))
@@ -330,9 +345,10 @@ server <- function(input, output, session) {
   })
   
   selected_ElevTS <- reactive({
-    icdf2 %>%
+    icdfE %>%
       filter(
-        common_name == input$common_nameEB,
+        common_name == input$common_nameE,
+        phenophase_description == input$phenophase_descriptionE,
       )
   })
   
@@ -456,7 +472,7 @@ server <- function(input, output, session) {
       scale_color_manual(values = elev_colors) +
       scale_fill_manual(values = elev_colors) +
       scale_x_continuous(breaks = unique(selected_ElevTS()$year), labels = unique(selected_ElevTS()$year)) +
-      labs(title = paste("First leaf out of", input$common_nameEB, "by elevation band"), 
+      labs(title = paste(input$phenophase_descriptionE, input$common_nameE, "by elevation band"), 
            x = "Year", y = "Day of Year", fill = "Elevation Bands") +
       theme_classic() + 
       theme(axis.text = element_text(size = 12),
