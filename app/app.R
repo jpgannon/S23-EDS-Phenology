@@ -208,9 +208,7 @@ tab4 <- tabPanel("Bivariate",
                        choices = c("Min. T spring" = "tmin_spring",
                                    "Max. T spring" = "tmax_spring", 
                                    "Acc. prcp." = "acc_prcp"),  
-                       
-                       selected = "tmin_spring",
-                       #inline = T,
+                       selected = "tmin_spring"
                      ),
                      
                      ##Input: species
@@ -257,9 +255,7 @@ overview <- tabPanel("Overview",
                       br(),
                      ),
                      
-                     
                      #tags$img(src="images/SmokyMountains1.jpg", align="right", width=200, height=100),
-                     
                      
                      div(
                        h3("Phenology"),
@@ -515,20 +511,25 @@ server <- function(input, output, session) {
       #geom_point(colour = "grey90", size = 4) +
       geom_smooth(method=lm, se=FALSE) +
       scale_color_manual(values = categories1) +
+      scale_fill_discrete(name = "Year") +
       ggtitle(paste(input$common_name_bivar, "first leaf out vs.", input$weather_condition)) +
       xlab(input$weather_condition) +
       ylab(paste("first leaf out DOY")) +
-      #labs(subtitle = "*need to reassess data subset...") +
+      labs(color = "Year") +
       theme_classic() +
+      guides(shape = "none", size = "none") +
       theme(axis.text = element_text(size = 12),
             axis.title = element_text(size = 16, face = "bold"),
             plot.title = element_text(size = 20, face = "bold"),
             legend.position = "bottom", legend.box = "horizontal",
-            legend.title = element_text(color="blue",size=12,face="bold"),
-            plot.margin = margin(.1, .1, .1, .1, "cm"),
-            aspect.ratio = 1)
+            legend.title = element_text(color="blue",size=14,face="bold"),
+            legend.margin = margin(0.2, 0.2, 0.2, 0.2, "cm"),
+            legend.justification = "left", 
+            #plot.margin = margin(.1, .1, .1, .1, "cm"),
+            #aspect.ratio = 1
+            )
     },
-    height = 500, width = 600
+    height = 600, width = 700
   )
 
   
