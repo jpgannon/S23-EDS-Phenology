@@ -195,12 +195,12 @@ tab4 <- tabPanel("Bivariate",
                      ),
                      
                      ##Input: species
-                     helpText("Select one or multiple species"),
+                     #helpText("Select one or multiple species"),
                      selectInput(
                        inputId = "common_name_bivar",
                        label = strong("Select Species"),
                        choices = unique(bivar_weather$common_name),
-                       multiple = TRUE, 
+                       #multiple = TRUE, 
                        selected = "red maple"
                      ),
                      
@@ -359,13 +359,15 @@ server <- function(input, output, session) {
       )
   })
   
-  selected_tab4 <- reactive({
+  selected_bivar <- reactive({
     bivar_weather %>%
       filter(
         site_name == input$site_name_bivar,
-        common_name %in% input$common_name_bivar
+        #common_name %in% input$common_name_bivar
+        common_name == input$common_name_bivar
       ) %>%
-      select(common_name, site_name, wvar=input$weather_condition, 
+      select(common_name, site_name, 
+             wvar=input$weather_condition, 
              year, day_of_year
       )
   })
@@ -386,7 +388,6 @@ server <- function(input, output, session) {
   status_colors <- c("blue", "goldenrod")
   status_labels <- c("Not Observed", "Observed")
   elev_order <- c("<800m", "800-1300m", ">1300m")
-  
   
   output$plot1 <- renderPlot({
     ggplot(selected_species(), aes(x=day_of_year, y=elev_bands,fill = y)) +
@@ -448,7 +449,6 @@ server <- function(input, output, session) {
     }
   })
   
-  
   ################################
   ## OUTPUT PLOT 2: time series ##
   elev_colors <- c("blue", "goldenrod", "black")
@@ -469,8 +469,6 @@ server <- function(input, output, session) {
       guides(color = FALSE)
   })
   
-
-  
   ###################
   ## OUTPUT PLOT 3 ##
   output$plot3 <- renderPlot({
@@ -490,14 +488,14 @@ server <- function(input, output, session) {
   categories1 <- c("blue", "goldenrod", "black", "red","darkorange", "yellow", "green", "cyan", "purple", "magenta", "pink")
   
   output$plot4 <- renderPlot({
-    ggplot(selected_tab4(), aes(x=wvar, y=day_of_year, shape=common_name)) +
+    ggplot(selected_bivar(), aes(x=wvar, y=day_of_year, shape=common_name)) +
       # x=tmin_spring
       # x=input$weather_condition
       geom_point(aes(size = 10, color = as.factor(year))) +
-      geom_point(colour = "grey90", size = 1.5) +
+      #geom_point(colour = "grey90", size = 4) +
       geom_smooth(method=lm, se=FALSE) +
       scale_color_manual(values = categories1) +
-      scale_fill_manual(values = categories1) +
+      #scale_fill_manual(values = categories1) +
       ggtitle(paste(input$common_name_bivar, "first leaf out vs.", input$weather_condition)) +
       xlab(input$weather_condition) +
       ylab(paste("first leaf out DOY")) +
@@ -507,7 +505,7 @@ server <- function(input, output, session) {
             axis.title = element_text(size = 16, face = "bold"),
             plot.title = element_text(size = 20, face = "bold")) 
       }, 
-      height = 600, width = 800)
+      height = 500, width = 600)
   
   #output$table_tab4 <- renderTable(selected_tab4())
   
@@ -518,7 +516,6 @@ server <- function(input, output, session) {
       bs_theme_update(my_theme, bootswatch = input$current_theme)
     )
   })
-  
 }
 
 #################################################################################################################################
