@@ -23,6 +23,7 @@ library(tidyverse)
 library(rsconnect)
 library(DT)
 
+
 rm(list = ls())
 
 ## Sample Data Files: ##
@@ -39,7 +40,7 @@ tab1 <- tabPanel("Phenology Observation Tracker",
                  fluid = TRUE,
                  sidebarLayout(
                    sidebarPanel(
-                     helpText("NOTE: Some data selections may not provide output."),
+                     
                      
                      selectInput(
                        inputId = "common_name",
@@ -47,6 +48,8 @@ tab1 <- tabPanel("Phenology Observation Tracker",
                        choices = unique(cdfa$common_name),
                        selected = "red maple"
                      ),
+                     
+                     helpText("NOTE: Some phenophase selections may not provide output."),
 
                      selectInput(
                        inputId = "phenophase_description",
@@ -71,6 +74,8 @@ tab1 <- tabPanel("Phenology Observation Tracker",
                          choices = unique(cdfa$common_name),
                          selected = "yellow buckeye"
                        ),
+                       
+                       helpText("NOTE: Some phenophase selections may not provide output."),
                        
                        selectInput(
                          inputId = "phenophase_description2",
@@ -101,6 +106,8 @@ tab1 <- tabPanel("Phenology Observation Tracker",
                          choices = unique(cdfa$common_name),
                          selected = "sugar maple"
                        ),
+                       
+                       helpText("NOTE: Some phenophase selections may not provide output."),
                        
                        selectInput(
                          inputId = "phenophase_description3",
