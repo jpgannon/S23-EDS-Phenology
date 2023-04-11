@@ -178,14 +178,13 @@ tab3 <- tabPanel("Species Time Series",
                        inputId = "common_name4",
                        label = strong("Select Species"),
                        choices = unique(icdf2$common_name),
-                       multiple = TRUE, 
-                       selected = "yellow birch"
+                       selected = "red maple"
                      ),
                      
                      selectInput(
                        inputId = "elev_bands2",
                        label = strong("Select Elevation Range"),
-                       choices = unique(icdf2$elev_bands),
+                       choices = c("<800m", "800-1300m", ">1300m"),
                        selected = "<800m"
                      ),
                    ),
@@ -392,7 +391,7 @@ server <- function(input, output, session) {
   selected_timeSeries <- reactive({
     bivar_weather %>%
       filter(
-        common_name %in% input$common_name4,
+        common_name == input$common_name4,
         elev_bands == input$elev_bands2,
       )
   })
@@ -492,7 +491,10 @@ server <- function(input, output, session) {
   output$plot3 <- renderPlot({
     ggplot(selected_timeSeries(), aes(x = year, y = day_of_year)) +
       geom_point(aes(color = common_name), pch = 21, size = 6) + 
-      geom_smooth(method=lm, se=FALSE) +
+      geom_smooth(method=lm, se=FALSE) + 
+      stat_poly_eq(formula = y ~ x, aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+                   parse = TRUE, size = 5) + 
+      scale_x_continuous(breaks = unique(selected_timeSeries()$year), labels = unique(selected_timeSeries()$year)) + 
       labs(title = paste("First leaf out of", input$common_name4, "at elevation band", input$elev_bands2), 
            x = "Year", y = "Day of Year")+
       theme_classic() +
