@@ -187,6 +187,13 @@ tab3 <- tabPanel("Species Time Series",
                        choices = c("<800m", "800-1300m", ">1300m"),
                        selected = "<800m"
                      ),
+                     
+                     selectInput(
+                       inputId = "Phenophases_species",
+                       label = strong("Select Elevation Range"),
+                       choices = c("Leaves", "Breaking leaf buds", "Colored leaves"),
+                       selected = "Leaves"
+                     ),
                    ),
                    mainPanel(
                      h4("First leaf out for selected species in elevation groups", align = "center"),
@@ -389,10 +396,11 @@ server <- function(input, output, session) {
   
   #select input for tab3
   selected_timeSeries <- reactive({
-    bivar_weather %>%
+    cdf2 %>%
       filter(
         common_name == input$common_name4,
         elev_bands == input$elev_bands2,
+        phenophase_description == input$Phenophases_species
       )
   })
   
