@@ -291,6 +291,8 @@ overview <- tabPanel("Overview",
                        p("Lastly, the bivariate tab allows the user to visualize the impacts of temperature or precipitation on the phenophase onset for a species over time.
                          The user can examine minimum or maximum spring temperature as well as precipitation accumulation.
                          The user selects a particular tree species and a particular site in order to subset the information."),
+                       p("Notes on weather condition data:"),
+                       p("Accumulated precipitation is calculated for the first observation of the phenophase."),
                        br(),
                        
                        h3("Creators"),
