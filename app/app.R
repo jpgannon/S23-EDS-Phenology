@@ -191,7 +191,7 @@ tab3 <- tabPanel("Species Time Series",
                      
                      selectInput(
                        inputId = "Phenophases_species",
-                       label = strong("Select Elevation Range"),
+                       label = strong("Select Phenophase"),
                        choices = c("Leaves", "Breaking leaf buds", "Colored leaves"),
                        selected = "Leaves"
                      ),
