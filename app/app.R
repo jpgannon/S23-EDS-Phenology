@@ -1,12 +1,7 @@
 ##-----------## VT2023 EDS -- GREAT SMOKIES PHENOLOGY APP ##-----------##
 ## Authors: Jason Halvis, Sean Murray, Jennifer Ochs, and Xuanang Zhao ##
 
-# THIS SECTION IS THE SETUP, IT DOWNLOADS ALL THE NECESSARY LIBRARIES 
-# AND THE DATA CAN BE IMPORTED WITH THE NPN DOWNLOAD PACKAGE,
-# OR VIA A CSV STORED ON A PERSONAL DEVICE
-#install.packages("ggplot2")
-#install.packages("ggpmisc")
-
+# SETUP: Download necessary packages
 library(shiny)
 library(shinydashboard)
 library(markdown)
@@ -23,13 +18,12 @@ library(showtext)
 library(tidyverse)
 library(rsconnect)
 library(DT)
-
 library(ggpmisc)
 
-
+# Clear environment if needed:
 rm(list = ls())
 
-## Sample Data Files: ##
+# Read in data files (from data_sampling.Rmd):
 cdfa <- read.csv("www/data/cdfa.csv")
 cdf2 <- read.csv("www/data/cdf2.csv")
 icdf2 <- read.csv("www/data/icdf2.csv")
