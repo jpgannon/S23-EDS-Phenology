@@ -31,13 +31,13 @@ bivar_weather <- read.csv("www/data/bivar_weather.csv")
 icdfE <- read.csv("www/data/icdfE.csv")
 
 #____________________________________________________________________________________________________________________________#
-#SHINY APP STARTS HERE
-# Define UI for app that draws a plot----
+##### SHINY APP: #####
+# TABS: Each primary tab and their inputs are defined in this section
+
 tab1 <- tabPanel("Phenology Observation Tracker",
                  fluid = TRUE,
                  sidebarLayout(
                    sidebarPanel(
-                     
                      
                      selectInput(
                        inputId = "common_name",
@@ -243,7 +243,6 @@ tab4 <- tabPanel("Bivariate",
                  )
 )
 #################################################################################################################################
-
 overview <- tabPanel("Overview", 
                      fluid = TRUE,
                      
@@ -296,18 +295,12 @@ overview <- tabPanel("Overview",
                      )
 )
 
-#################################################################################################################################
-#################################################################################################################################
-# Setup the bslib theme object
+# THEME selection: Setup the bslib theme object
 my_theme <- bs_theme(bootswatch = "darkly",
                      base_font = font_google("Roboto Mono")) ##other fonts: Space Mono, Lato, Roboto, Source Sans Pro, Oswald, Inter
-# Let thematic know to update the fonts, too
 thematic_shiny(font = "auto")
 
-
-#################################################################################################################################
-#################################################################################################################################
-
+# CREATE UI: use the previously defined tabs to set up the app UI:
 ui = fluidPage(
   title = "GRSM Phenology App",
   titlePanel(title = div(tags$img(src = "images/SmokyMountains1.jpg", width=90, height=60), 
@@ -321,12 +314,13 @@ ui = fluidPage(
 #################################################################################################################################
 #################################################################################################################################
 
+# SERVER: Address the inputs from each tab -- select and filter data reactive to user inputs for desired user outputs.
 server <- function(input, output, session) {
+  # Theme integration to plot outputs:
   thematic::thematic_shiny()
   
-  # Plot of Day of Year by Year
   
-  # Subset data
+  # Subset data using reactive pipes:
   selected_species <- reactive({
     cdfa %>%
       filter(common_name == input$common_name,
@@ -364,7 +358,6 @@ server <- function(input, output, session) {
       filter(
         common_name == input$common_name,
         phenophase_description == input$phenophase_description,
-        #elev_bands == input$elev_bands,
         day_of_year < input$DOY
       )
   })
@@ -373,7 +366,6 @@ server <- function(input, output, session) {
     icdf2 %>%
       filter(
         common_name == input$common_name2,
-        #elev_bands == input$elev_bands2,
         day_of_year < input$DOY2
       )
   })
@@ -382,7 +374,6 @@ server <- function(input, output, session) {
     bivar_weather %>%
       filter(
         site_name == input$site_name_bivar,
-        #common_name %in% input$common_name_bivar
         common_name == input$common_name_bivar
       ) %>%
       select(common_name, site_name, 
@@ -391,7 +382,6 @@ server <- function(input, output, session) {
       )
   })
   
-  #select input for tab3
   selected_timeSeries <- reactive({
     cdf2 %>%
       filter(
@@ -401,7 +391,7 @@ server <- function(input, output, session) {
       )
   })
   
-  #########
+# SERVER OUTPUT: determine how each tab should display data in a plot:
   
   ##########################################
   ## OUTPUT PLOT 1: status / quick glance ##
@@ -515,7 +505,6 @@ server <- function(input, output, session) {
   output$plot4 <- renderPlot({
     ggplot(selected_bivar(), aes(x=wvar, y=day_of_year, shape=common_name)) +
       geom_point(aes(size = 20, color = as.factor(year))) +
-      #geom_point(colour = "grey90", size = 4) +
       geom_smooth(method=lm, se=FALSE) +
       scale_color_manual(values = categories1) +
       scale_fill_discrete(name = "Year") +
@@ -531,19 +520,14 @@ server <- function(input, output, session) {
             legend.position = "bottom", legend.box = "horizontal",
             legend.title = element_text(color="blue",size=14,face="bold"),
             legend.margin = margin(0.2, 0.2, 0.2, 0.2, "cm"),
-            legend.justification = "left", 
-            #plot.margin = margin(.1, .1, .1, .1, "cm"),
-            #aspect.ratio = 1
+            legend.justification = "left"
             )
     },
     height = 600, width = 700
   )
 
-  
-  #output$table_tab4 <- renderTable(selected_tab4())
-  
   ############################
-  ## light mode / dark mode ##
+  # THEME: light/dark mode button
   observe({
     session$setCurrentTheme(
       bs_theme_update(my_theme, bootswatch = input$current_theme)
@@ -554,8 +538,9 @@ server <- function(input, output, session) {
 #################################################################################################################################
 #################################################################################################################################
 
+# APP: provide UI and Server inputs to run the app
 thematic_shiny()
 thematic_on()
-####
+# RUN THE APP:
 shinyApp(ui = ui, server = server)
 
