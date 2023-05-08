@@ -8,6 +8,6 @@ by Jason Halvis, Sean Murray, Jennifer Ochs, & Xuanang Zhao
 
 #### App Folder ####
 
-###app.R###
+### app.R ###
 R shiny app, now hosted on: https://jp-gannon.shinyapps.io/Phenology-EDS23/
 
